@@ -20,6 +20,8 @@ export { paymentError } from './error.ts';
 export { resolveConfig } from './config.ts';
 export type { PaymentConfig, ResolvedConfig } from './config.ts';
 
+export { DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT, getPayment, listPayments } from './read.ts';
+
 export {
   PAYMENT_ERROR_CODES,
   PAYMENT_FAILED_REASONS,
