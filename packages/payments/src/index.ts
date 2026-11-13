@@ -6,10 +6,14 @@
  * @lumibase/network (chain config, RPC reads, confirmation policy), and
  * @lumibase/database (persistence) into a payment service whose behavior
  * matches specs/payments/*.json exactly.
- *
- * Batch 1 (this version) provides types, errors, and config only. Service
- * methods are added in Batches 2-4.
  */
+
+export {
+  MAX_EXPIRES_IN,
+  MAX_METADATA_BYTES,
+  MAX_REFERENCE_LENGTH,
+  createPayment,
+} from './create.ts';
 
 export { paymentError } from './error.ts';
 
@@ -29,5 +33,8 @@ export type {
   PaymentFailedReason,
   PaymentStatus,
 } from './types.ts';
+
+export { toWirePayment } from './wire.ts';
+export type { WirePayment } from './wire.ts';
 
 export const VERSION = '0.1.0';
