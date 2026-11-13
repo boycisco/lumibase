@@ -11,7 +11,9 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
@@ -29,6 +31,7 @@
     "@types/node": "catalog:",
     "dotenv": "catalog:",
     "eslint": "catalog:",
+    "solc": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

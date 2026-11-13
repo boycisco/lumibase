@@ -11,6 +11,9 @@ export type { AttemptStatus, RecordAttemptInput, RecordAttemptResult } from './a
 
 export { cancelPayment } from './cancel.ts';
 
+export { confirmPayment } from './confirm.ts';
+export type { ConfirmInput, ConfirmResult } from './confirm.ts';
+
 export {
   MAX_EXPIRES_IN,
   MAX_METADATA_BYTES,
