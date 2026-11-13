@@ -9,6 +9,9 @@ catalogs:
     '@eslint/js':
       specifier: ^9.17.0
       version: 9.39.5
+    '@noble/hashes':
+      specifier: ^1.7.0
+      version: 1.8.0
     eslint:
       specifier: ^9.17.0
       version: 9.39.5
@@ -52,6 +55,10 @@ importers:
         version: 8.72.2(eslint@9.39.5)(typescript@5.9.3)
 
   packages/core:
+    dependencies:
+      '@noble/hashes':
+        specifier: 'catalog:'
+        version: 1.8.0
     devDependencies:
       eslint:
         specifier: 'catalog:'
@@ -263,6 +270,10 @@ packages:
 
   '@jridgewell/sourcemap-codec@1.6.0':
     resolution: {integrity: sha512-T7jf+5zgsZHwNJ4lvQ7/aezbyk0nNX+zJVWpmHA7VYsEx7a7qr5Rg5IbtJFqkgze5Y2sruq1RUY8Q837Od7iFw==}
+
+  '@noble/hashes@1.8.0':
+    resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
+    engines: {node: ^14.21.3 || >=16}
 
   '@rollup/rollup-android-arm-eabi@4.68.3':
     resolution: {integrity: sha512-mqfypgH/liYjaSCoPI4erckUcROgZtmFUUmyOJ05oyayi/tVqOEYAzWP7ufqCoCT3xB31Fw4XIVO/jX42hYvKA==}
@@ -1162,6 +1173,8 @@ snapshots:
   '@humanwhocodes/retry@0.4.3': {}
 
   '@jridgewell/sourcemap-codec@1.6.0': {}
+
+  '@noble/hashes@1.8.0': {}
 
   '@rollup/rollup-android-arm-eabi@4.68.3':
     optional: true

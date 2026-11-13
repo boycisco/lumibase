@@ -20,6 +20,9 @@
     "test": "vitest run",
     "lint": "eslint src tests"
   },
+  "dependencies": {
+    "@noble/hashes": "catalog:"
+  },
   "devDependencies": {
     "eslint": "catalog:",
     "typescript": "catalog:",

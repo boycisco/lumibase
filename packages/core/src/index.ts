@@ -7,6 +7,8 @@
  * directory. This package is the TypeScript reference implementation.
  */
 
+export { assertAddress, checksumAddress, isAddress, normalizeAddress } from './address.js';
+
 export {
   MAX_UINT256,
   deserializeAmount,
@@ -14,6 +16,9 @@ export {
   parseUnits,
   serializeAmount,
 } from './amount.js';
+
+export { assertChain, assertChainId, assertEnabled } from './chain.js';
+export type { ChainConfig, ConfirmationPolicy, NativeCurrency } from './chain.js';
 
 export {
   HTTP_STATUS,
