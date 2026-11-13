@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "0.1.0",
+  "description": "Field-level description of every payment object field in LumiBase v0.1. Human-readable intent plus type information. Machine-readable validation lives in specs/schemas/payment.json.",
+  "fields": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "required": true,
+      "description": "Collision-resistant public payment identifier (UUID v4 or equivalent). Sequential IDs MUST NOT be used as public identifiers."
+    },
+    "applicationId": {
+      "type": "string",
+      "format": "uuid",
+      "required": true,
+      "description": "The application that created the payment request. Used for authorization and data isolation."
+    },
+    "chainId": {
+      "type": "integer",
+      "minimum": 1,
+      "required": true,
+      "description": "EIP-155 chain ID of the network on which payment is expected. Supported values are listed in specs/network/chains.json."
+    },
+    "token": {
+      "type": "string",
+      "format": "evm-address",
+      "required": true,
+      "description": "EVM address of the ERC-20 token contract. Must match an enabled token registered for the chain in specs/network/chains.json."
+    },
+    "amount": {
+      "type": "string",
+      "format": "uint256-positive-decimal-string",
+      "required": true,
+      "description": "Required amount in the token smallest indivisible unit (base units), encoded as a canonical decimal string without leading zeros. For USDC (6 decimals), 1.50 USDC is 1500000. Must be > 0 and <= 2^256 - 1."
+    },
+    "recipient": {
+      "type": "string",
+      "format": "evm-address",
+      "required": true,
+      "description": "The address that must receive the token transfer."
+    },
+    "payer": {
+      "type": ["string", "null"],
+      "format": "evm-address",
+      "required": false,
+      "description": "Optional expected sender. When specified, only a transaction from this address may confirm the payment. When null or omitted, any sender is accepted."
+    },
+    "reference": {
+      "type": ["string", "null"],
+      "required": false,
+      "description": "Optional merchant-supplied external reference (e.g. an order ID). Not required to be unique; applications must implement their own deduplication if needed. Intended for application-side correlation only; never trusted for authorization."
+    },
+    "status": {
+      "type": "string",
+      "required": true,
+      "description": "Current lifecycle status. Must be one of the values in specs/payments/lifecycle.json."
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "required": true,
+      "description": "ISO 8601 UTC timestamp after which the payment request expires and can no longer be confirmed."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "required": true,
+      "description": "ISO 8601 UTC timestamp of payment creation."
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "required": true,
+      "description": "ISO 8601 UTC timestamp of the most recent modification."
+    },
+    "metadata": {
+      "type": "object",
+      "required": false,
+      "description": "Arbitrary application-supplied JSON object. Serialized size MUST NOT exceed 8 KiB. MUST NOT contain secrets or private keys."
+    }
+  },
+  "constraints": [
+    "Amounts are transmitted as strings to preserve integer precision beyond Number.MAX_SAFE_INTEGER.",
+    "Dates are transmitted as ISO 8601 strings in UTC with a trailing Z.",
+    "Addresses are transmitted as 0x-prefixed hex strings. Lowercase or EIP-55 checksummed are accepted on input; output is normalized as configured by the implementation.",
+    "The pair (applicationId, reference) is not required to be unique.",
+    "The payment object is read-only to clients after creation except for status transitions performed by LumiBase itself."
+  ],
+  "notes": [
+    "The payment object describes a PAYMENT REQUEST. It does not describe individual transaction attempts. A payment request may have zero or more transaction attempts over its lifetime. Each transaction attempt has its own record and its own status (verified, rejected, orphaned) that is independent of the payment status.",
+    "Transaction attempt structure and lifecycle are described in a later Phase 3 batch. Consumers reading the payment object should not assume any particular transaction attempt is associated; the confirm response returns the associated transaction when one exists."
+  ]
+}

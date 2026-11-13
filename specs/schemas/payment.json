@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lumibase.dev/schemas/payment.json",
+  "title": "LumiBase Payment",
+  "description": "Machine-readable JSON Schema for payment objects in LumiBase v0.1. Any implementation claiming conformance MUST validate payment objects against this schema. See specs/payments/payment.json for human-readable field descriptions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "applicationId",
+    "chainId",
+    "token",
+    "amount",
+    "recipient",
+    "status",
+    "expiresAt",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "applicationId": { "type": "string", "format": "uuid" },
+    "chainId": { "type": "integer", "minimum": 1 },
+    "token": { "type": "string", "pattern": "^0x[0-9a-fA-F]{40}$" },
+    "amount": { "type": "string", "pattern": "^[1-9][0-9]*$" },
+    "recipient": { "type": "string", "pattern": "^0x[0-9a-fA-F]{40}$" },
+    "payer": {
+      "oneOf": [{ "type": "string", "pattern": "^0x[0-9a-fA-F]{40}$" }, { "type": "null" }]
+    },
+    "reference": {
+      "oneOf": [{ "type": "string", "maxLength": 256 }, { "type": "null" }]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "confirmed",
+        "expired",
+        "failed",
+        "cancelled",
+        "underpaid",
+        "overpaid"
+      ]
+    },
+    "expiresAt": { "type": "string", "format": "date-time" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "metadata": { "type": "object", "maxProperties": 100 }
+  }
+}

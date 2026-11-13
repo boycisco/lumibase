@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "0.1.0",
+  "description": "Payment lifecycle contract for LumiBase v0.1. The payment request lifecycle is distinct from the individual transaction attempt lifecycle: a rejected transaction attempt does NOT fail the payment request. Every SDK implementation MUST follow this document exactly.",
+  "statuses": {
+    "pending": {
+      "description": "A payment request exists but no valid payment has been confirmed. This is the normal resting state. Confirm calls may be made repeatedly; each attempt is verified independently.",
+      "terminal": false,
+      "transitionsTo": ["processing", "expired", "cancelled"]
+    },
+    "processing": {
+      "description": "A transaction hash has been submitted and verification is in progress. This state is transient within a single confirm call: every completed confirm resolves to pending (retryable), confirmed, underpaid, or overpaid.",
+      "terminal": false,
+      "transitionsTo": ["pending", "confirmed", "underpaid", "overpaid"]
+    },
+    "confirmed": {
+      "description": "The required payment conditions have been satisfied by independently verified blockchain evidence. Terminal.",
+      "terminal": true,
+      "transitionsTo": []
+    },
+    "expired": {
+      "description": "The request reached its expiresAt while still in pending and was transitioned to expired by the expiry worker or by a confirm call that observed past expiry. Terminal.",
+      "terminal": true,
+      "transitionsTo": []
+    },
+    "failed": {
+      "description": "Reserved for v0.2+. Not reachable through any v0.1 API. A rejected transaction attempt does NOT transition a payment request to failed; the payment returns to pending so another transaction may be submitted.",
+      "terminal": true,
+      "transitionsTo": []
+    },
+    "cancelled": {
+      "description": "The application cancelled the request before completion. Terminal.",
+      "terminal": true,
+      "transitionsTo": []
+    },
+    "underpaid": {
+      "description": "A valid payment was detected, but the amount was lower than required. Terminal in v0.1. No automatic refund; no combining with another transaction.",
+      "terminal": true,
+      "transitionsTo": []
+    },
+    "overpaid": {
+      "description": "A valid payment was detected, but the amount exceeded the required amount. Terminal in v0.1. No automatic refund.",
+      "terminal": true,
+      "transitionsTo": []
+    }
+  },
+  "transitions": [
+    {
+      "from": "pending",
+      "to": "processing",
+      "trigger": "confirm_requested",
+      "description": "The application submitted a transaction hash for verification and the payment was atomically transitioned from pending to processing."
+    },
+    {
+      "from": "pending",
+      "to": "expired",
+      "trigger": "expires_at_reached",
+      "description": "The expiry worker or an incoming confirm call observed that expiresAt has passed. The transition to expired MUST be performed atomically (compare-and-swap on status=pending)."
+    },
+    {
+      "from": "pending",
+      "to": "cancelled",
+      "trigger": "cancel_requested",
+      "description": "The application cancelled the payment request while it was pending."
+    },
+    {
+      "from": "processing",
+      "to": "pending",
+      "trigger": "verification_inconclusive",
+      "description": "Verification completed without establishing a definitive payment outcome. Reasons include: transient RPC failure, missing receipt, timeout, insufficient confirmations so far, or the submitted transaction was definitively rejected for this payment (wrong recipient, wrong token, wrong sender, transaction reverted). The payment request remains valid and the caller may submit the same or a different transaction hash on retry. Any recorded transaction attempt MUST be persisted with its own attempt status so retries do not create duplicate records."
+    },
+    {
+      "from": "processing",
+      "to": "confirmed",
+      "trigger": "verification_matched",
+      "description": "A single transaction exactly matched the required recipient, token, network, sender (when specified), and amount; the confirmation policy was satisfied; and the transaction was not already associated with another payment. Confirmation is terminal."
+    },
+    {
+      "from": "processing",
+      "to": "underpaid",
+      "trigger": "verification_amount_low",
+      "description": "A valid transaction (matching recipient, token, network, sender when specified, not reverted, sufficiently confirmed) transferred an amount strictly less than the required amount. Terminal."
+    },
+    {
+      "from": "processing",
+      "to": "overpaid",
+      "trigger": "verification_amount_high",
+      "description": "A valid transaction (matching recipient, token, network, sender when specified, not reverted, sufficiently confirmed) transferred an amount strictly greater than the required amount. Terminal."
+    }
+  ],
+  "expiry": {
+    "description": "Expiration semantics. Expiration is an explicit status transition, never a computed value on read. The lifecycle never transitions a payment to expired based on wall-clock time observed during a GET request.",
+    "trigger": "expires_at_reached",
+    "allowedFrom": ["pending"],
+    "forbiddenFrom": [
+      "processing",
+      "confirmed",
+      "expired",
+      "failed",
+      "cancelled",
+      "underpaid",
+      "overpaid"
+    ],
+    "mustBeExplicitTransition": true,
+    "cannotBeComputedOnRead": true,
+    "confirmAfterExpiry": {
+      "behavior": "rejected",
+      "errorCode": "PAYMENT_EXPIRED",
+      "httpStatus": 409,
+      "atomicWithTransition": true,
+      "description": "When a confirm call arrives for a payment whose status is pending AND whose expiresAt has passed, the call MUST be rejected with PAYMENT_EXPIRED and the payment MUST transition from pending to expired atomically as part of that rejection. This eliminates any race between the confirm call and the expiry worker: both enforce the same rule."
+    },
+    "processingIsProtected": {
+      "skipInWorker": true,
+      "neverForceExpired": true,
+      "description": "A payment in processing MUST be allowed to finish verification regardless of expiresAt. The expiry worker MUST skip any payment whose status is processing. A payment in processing is never forced to expired mid-verification."
+    },
+    "workerRole": {
+      "description": "The expiry worker periodically transitions pending payments past expiresAt to expired. The worker is an optimization for status freshness, not a correctness mechanism. The confirm endpoint independently enforces the same rule, so correctness does not depend on the worker running."
+    }
+  },
+  "failure": {
+    "description": "Payment request failure policy. The payment request is a distinct entity from any individual transaction attempt. A rejected transaction attempt fails the attempt, not the request.",
+    "distinguishAttemptFromRequest": true,
+    "attemptRejectionIsNotPaymentFailure": true,
+    "v01ConfirmNeverFails": true,
+    "transientErrorsDoNotFail": [
+      "rpc_failure",
+      "missing_receipt",
+      "timeout",
+      "inconclusive_verification"
+    ],
+    "rejectedAttemptsReturnToPending": true,
+    "failedReachableVia": [
+      "admin_action (reserved for v0.2+)",
+      "explicit_abandon (reserved for v0.2+)"
+    ]
+  },
+  "atomicity": {
+    "description": "State transitions and transaction association MUST be safe under concurrency. Correctness must not depend on the caller acting sequentially.",
+    "stateTransitionsAreAtomic": true,
+    "concurrencyPolicy": "compare_and_swap",
+    "concurrencyDescription": "Each state transition MUST use an atomic compare-and-swap on the payment status. Implementations using SQL MUST use an UPDATE with an explicit prior-status predicate (e.g. UPDATE payments SET status = ? WHERE id = ? AND status = ?) and MUST verify exactly one row changed. If zero rows changed, the caller re-reads the payment and applies the current-status rules.",
+    "concurrentConfirmPolicy": "at_most_one_transaction_confirms",
+    "concurrentConfirmDescription": "Two simultaneous confirm calls for the same payment MUST NOT both proceed to full verification. Acceptable implementations: (a) serialize both through a row-level lock so the second observes the first result, (b) reject the second with PAYMENT_VERIFICATION_IN_PROGRESS, or (c) return the current persisted status without re-verifying. No two different transactions may ever confirm the same payment request.",
+    "transactionUniqueness": {
+      "description": "A single on-chain transaction (identified by chain_id + transaction_hash) may be associated with at most one payment request, globally across all applications on that chain. The database MUST enforce a unique constraint on (chain_id, transaction_hash) at the transactions table. Attempting to confirm a payment with an already-associated transaction returns TRANSACTION_ALREADY_PROCESSED.",
+      "uniqueOn": ["chain_id", "transaction_hash"]
+    }
+  },
+  "rules": [
+    {
+      "id": "single_exact_payment_confirms",
+      "description": "A single transaction that exactly matches the required recipient, token, network, sender (when specified), and amount confirms the payment request."
+    },
+    {
+      "id": "underpayment_terminal",
+      "description": "An underpayment remains underpaid. v0.1 does not automatically issue refunds, does not permit topping up an existing underpaid request, and does not create a follow-up payment automatically."
+    },
+    {
+      "id": "overpayment_terminal",
+      "description": "An overpayment remains overpaid. v0.1 does not automatically issue refunds and does not split the excess into a new payment."
+    },
+    {
+      "id": "no_transaction_combining",
+      "description": "Multiple transactions to the same payment request are never combined. Each confirm call verifies its submitted transaction against the required amount independently."
+    },
+    {
+      "id": "no_recovery_from_terminal",
+      "description": "No terminal status (confirmed, expired, failed, cancelled, underpaid, overpaid) may transition to any other status. v0.1 has no recovery policy: terminal is final."
+    },
+    {
+      "id": "idempotent_confirm",
+      "description": "The confirm endpoint may be called repeatedly. On a pending payment it attempts verification. On a processing payment it applies the concurrent-confirm policy. On a terminal payment it returns the existing state without re-verification."
+    },
+    {
+      "id": "explicit_expiration_transition",
+      "description": "Expiration is an explicit state transition performed by the expiry worker or by a confirm call observing past-expiry on a pending payment. It is NEVER computed dynamically on read. A GET request for a pending payment past expiresAt returns pending until a worker or confirm call transitions it."
+    },
+    {
+      "id": "only_pending_can_expire",
+      "description": "Only pending payments can transition to expired. A payment in processing MUST be allowed to finish verification, even if its expiresAt has passed during verification."
+    },
+    {
+      "id": "processing_must_finish",
+      "description": "A payment in processing MUST reach a definitive outcome (pending, confirmed, underpaid, overpaid) before any expiry evaluation applies. Verification is not aborted by wall-clock expiration."
+    },
+    {
+      "id": "transient_failures_not_terminal",
+      "description": "Transient errors (RPC failures, missing receipts, timeouts, inconclusive verification) MUST NOT produce terminal payment statuses. They resolve to pending so the caller may retry."
+    },
+    {
+      "id": "attempt_failure_does_not_fail_request",
+      "description": "A rejected transaction attempt (wrong recipient, wrong token, wrong sender, reverted, insufficient confirmations) resolves the payment to pending, not failed. The caller may submit a different transaction hash."
+    },
+    {
+      "id": "confirm_after_expiry_rejected_atomically",
+      "description": "A confirm call on a pending payment whose expiresAt has passed MUST be rejected with PAYMENT_EXPIRED and the payment MUST transition to expired atomically as part of the rejection."
+    },
+    {
+      "id": "atomic_state_transitions",
+      "description": "Every state transition MUST use compare-and-swap semantics. Two concurrent state-changing operations MUST NOT both succeed on the same payment."
+    },
+    {
+      "id": "at_most_one_transaction_confirms",
+      "description": "No two different transactions may confirm the same payment request, regardless of concurrency. The database MUST enforce uniqueness of (chain_id, transaction_hash) at the transactions table."
+    },
+    {
+      "id": "confirmation_is_independent",
+      "description": "A payment is confirmed only by independently verified blockchain evidence, never by a client-claimed status, amount, or sender. The backend re-derives every relevant fact from the network."
+    }
+  ]
+}

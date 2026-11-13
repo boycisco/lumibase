@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "0.1.0",
+  "description": "Webhook event types emitted by LumiBase v0.1. Every event has a stable envelope (id, type, createdAt, data). Event IDs are globally unique and are the canonical identifier consumers should use for idempotency.",
+  "envelope": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "required": true,
+      "description": "Globally unique event identifier. Consumers MUST use this field for deduplication."
+    },
+    "type": {
+      "type": "string",
+      "required": true,
+      "description": "The event type key from the types map below."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "required": true,
+      "description": "ISO 8601 UTC timestamp of event creation."
+    },
+    "data": {
+      "type": "object",
+      "required": true,
+      "description": "Type-specific payload. Fields listed per type below; shapes refer to the payment object described in specs/payments/payment.json."
+    }
+  },
+  "types": {
+    "payment.created": {
+      "description": "A new payment request was created.",
+      "data": { "payment": "Payment object." }
+    },
+    "payment.processing": {
+      "description": "A transaction hash was submitted and verification has begun.",
+      "data": { "payment": "Payment object.", "transactionHash": "0x-prefixed 32-byte hex string." }
+    },
+    "payment.confirmed": {
+      "description": "Verification succeeded and the payment is confirmed.",
+      "data": { "payment": "Payment object.", "transaction": "Transaction object." }
+    },
+    "payment.failed": {
+      "description": "Reserved for v0.2+. Not emitted in v0.1 because failed is unreachable through the v0.1 confirm endpoint. Included here so consumers and implementers have a stable event shape for when failed becomes reachable.",
+      "data": {
+        "payment": "Payment object.",
+        "reason": "Reason code from specs/payments/errors.json reasons.values."
+      }
+    },
+    "payment.expired": {
+      "description": "The payment request expired without successful completion. Terminal.",
+      "data": { "payment": "Payment object." }
+    },
+    "payment.underpaid": {
+      "description": "A valid payment was received but the amount was less than required. Terminal.",
+      "data": { "payment": "Payment object.", "transaction": "Transaction object." }
+    },
+    "payment.overpaid": {
+      "description": "A valid payment was received but the amount was more than required. Terminal.",
+      "data": { "payment": "Payment object.", "transaction": "Transaction object." }
+    }
+  },
+  "notes": [
+    "v0.1 does not emit a payment.cancelled event. Cancellation is initiated by the application, so the canceller already knows.",
+    "Events MUST be persisted before any webhook delivery is attempted.",
+    "Webhook consumers MUST be idempotent and use the event id field for deduplication.",
+    "Delivery retries use exponential backoff; consumers may observe duplicate deliveries of the same event id."
+  ]
+}

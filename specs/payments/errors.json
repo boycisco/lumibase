@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "0.1.0",
+  "description": "Payment-specific error codes and reason codes for LumiBase v0.1. All API errors use the wire shape { error: { code, message, requestId? } }. Cross-cutting codes (VALIDATION_ERROR, NOT_FOUND, UNAUTHORIZED, FORBIDDEN, CONFLICT, RATE_LIMITED, CONFIG_ERROR, INTERNAL_ERROR) are defined in packages/core.",
+  "codes": {
+    "PAYMENT_NOT_FOUND": {
+      "httpStatus": 404,
+      "description": "No payment exists with the given ID for the authenticated application."
+    },
+    "PAYMENT_EXPIRED": {
+      "httpStatus": 409,
+      "description": "The payment request has expired and can no longer be confirmed."
+    },
+    "PAYMENT_ALREADY_CONFIRMED": {
+      "httpStatus": 409,
+      "description": "The payment is already confirmed. Confirm calls are idempotent and return the existing state."
+    },
+    "PAYMENT_CANCELLED": {
+      "httpStatus": 409,
+      "description": "The payment is cancelled and cannot be confirmed."
+    },
+    "PAYMENT_INVALID_STATE": {
+      "httpStatus": 409,
+      "description": "The payment is in a status that does not permit the requested operation."
+    },
+    "PAYMENT_VERIFICATION_IN_PROGRESS": {
+      "httpStatus": 409,
+      "description": "Another confirm call is currently verifying the same payment. The caller may retry after a short delay, or may read the payment status to observe the eventual outcome. This error is only returned under concurrent-confirm policy (b) described in specs/payments/lifecycle.json atomicity section; implementations that serialize confirms or return existing status instead may never emit it."
+    },
+    "TRANSACTION_NOT_FOUND": {
+      "httpStatus": 404,
+      "description": "No transaction with the given hash exists on the expected network."
+    },
+    "TRANSACTION_REVERTED": {
+      "httpStatus": 422,
+      "description": "The transaction exists but reverted on chain. The payment request itself remains pending; a different transaction may be submitted."
+    },
+    "TRANSACTION_ALREADY_PROCESSED": {
+      "httpStatus": 409,
+      "description": "The transaction has already been associated with a payment and cannot be used for another. The payment request remains pending; a different transaction may be submitted."
+    },
+    "TRANSACTION_WRONG_NETWORK": {
+      "httpStatus": 422,
+      "description": "The transaction was observed on a different network than the payment expects."
+    },
+    "TRANSACTION_WRONG_RECIPIENT": {
+      "httpStatus": 422,
+      "description": "The transaction transferred tokens to a recipient different from the payment request. The payment request remains pending; a different transaction may be submitted."
+    },
+    "TRANSACTION_WRONG_TOKEN": {
+      "httpStatus": 422,
+      "description": "The transaction transferred a token different from the payment request. The payment request remains pending; a different transaction may be submitted."
+    },
+    "TRANSACTION_WRONG_SENDER": {
+      "httpStatus": 422,
+      "description": "The transaction was sent from an address different from the specified payer. The payment request remains pending; a different transaction may be submitted."
+    },
+    "TRANSACTION_NOT_ENOUGH_CONFIRMATIONS": {
+      "httpStatus": 422,
+      "description": "The transaction is mined but has fewer confirmations than the chain policy requires. The payment request remains pending; the same transaction may be resubmitted once more confirmations are available."
+    },
+    "TRANSACTION_RPC_FAILURE": {
+      "httpStatus": 503,
+      "description": "The blockchain RPC endpoint could not be reached or returned an error. The payment request remains pending; the caller may retry the same transaction hash."
+    },
+    "UNSUPPORTED_CHAIN": {
+      "httpStatus": 422,
+      "description": "The chain ID is not supported or is currently disabled."
+    },
+    "UNSUPPORTED_TOKEN": {
+      "httpStatus": 422,
+      "description": "The token address is not registered for this chain."
+    },
+    "WEBHOOK_INVALID_ENDPOINT": {
+      "httpStatus": 422,
+      "description": "The webhook endpoint URL is not permitted (loopback, private network, invalid scheme, or other prohibited destination)."
+    }
+  },
+  "reasons": {
+    "description": "Reason codes attached to payment.failed events. Reserved for v0.2+ because failed is unreachable through v0.1 confirm. Distinct from API error codes: reasons describe the failing payment outcome; API codes describe the failing request.",
+    "values": [
+      "RECIPIENT_MISMATCH",
+      "TOKEN_MISMATCH",
+      "SENDER_MISMATCH",
+      "TRANSACTION_REVERTED",
+      "INSUFFICIENT_CONFIRMATIONS",
+      "VERIFICATION_TIMEOUT",
+      "TRANSACTION_ALREADY_PROCESSED"
+    ]
+  }
+}

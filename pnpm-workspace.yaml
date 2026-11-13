@@ -1,6 +1,7 @@
 packages:
   - 'apps/*'
   - 'packages/*'
+  - 'tests/*'
 
 catalog:
   '@eslint/js': ^9.17.0

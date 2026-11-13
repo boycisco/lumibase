@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "0.1.0",
+  "description": "Supported blockchain networks and initial token registry for LumiBase v0.1. Base Mainnet is configured but disabled; enabling it is a deliberate change requiring completion of Phase 10 and Phase 12.",
+  "chains": {
+    "84532": {
+      "id": 84532,
+      "name": "Base Sepolia",
+      "testnet": true,
+      "enabled": true,
+      "native": { "name": "Ether", "symbol": "ETH", "decimals": 18 },
+      "explorer": "https://sepolia.basescan.org",
+      "confirmation": { "blocks": 12, "finality": "soft" },
+      "tokens": [
+        {
+          "address": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+          "symbol": "USDC",
+          "name": "USD Coin",
+          "decimals": 6,
+          "enabled": true
+        }
+      ]
+    },
+    "8453": {
+      "id": 8453,
+      "name": "Base Mainnet",
+      "testnet": false,
+      "enabled": false,
+      "native": { "name": "Ether", "symbol": "ETH", "decimals": 18 },
+      "explorer": "https://basescan.org",
+      "confirmation": { "blocks": 12, "finality": "soft" },
+      "tokens": [
+        {
+          "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "symbol": "USDC",
+          "name": "USD Coin",
+          "decimals": 6,
+          "enabled": false
+        }
+      ]
+    }
+  },
+  "notes": [
+    "RPC URLs are intentionally omitted from this file. They are per-environment configuration, not protocol constants, and must be supplied via environment variables.",
+    "The 12-block threshold is a conservative v0.1 default (approximately 24 seconds on Base). Base finality is ultimately derived from Ethereum L1; integrations with higher assurance requirements may raise this threshold, and v0.2 will introduce an explicit L1-finality policy.",
+    "Base Mainnet and its USDC token MUST remain disabled until the complete payment flow (Phase 10) and release checklist (Phase 12) are verified.",
+    "USDC addresses are the canonical Base deployments published by Circle."
+  ]
+}
