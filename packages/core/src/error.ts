@@ -38,6 +38,7 @@ export type CoreErrorCode =
   | 'FORBIDDEN'
   | 'CONFLICT'
   | 'RATE_LIMITED'
+  | 'CONFIG_ERROR'
   | 'INTERNAL_ERROR'
   | (string & {});
 

@@ -20,6 +20,8 @@ export {
 export { assertChain, assertChainId, assertEnabled } from './chain.js';
 export type { ChainConfig, ConfirmationPolicy, NativeCurrency } from './chain.js';
 
+export { httpUrl, loadEnv, nodeEnv, port, secret, url } from './config.js';
+
 export {
   HTTP_STATUS,
   LumiError,
