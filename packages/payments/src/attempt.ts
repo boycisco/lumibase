@@ -12,12 +12,12 @@
  * parse error strings.
  */
 
-import { and, eq } from "drizzle-orm";
-import { transactions } from "@lumibase/database";
-import type { ResolvedConfig } from "./config.ts";
+import { and, eq } from 'drizzle-orm';
+import { transactions } from '@lumibase/database';
+import type { ResolvedConfig } from './config.ts';
 
 /** Attempt outcome. `verified` = passed all checks. */
-export type AttemptStatus = "verified" | "rejected" | "orphaned";
+export type AttemptStatus = 'verified' | 'rejected' | 'orphaned';
 
 export interface RecordAttemptInput {
   readonly paymentId: string;
@@ -32,8 +32,8 @@ export interface RecordAttemptInput {
 }
 
 export type RecordAttemptResult =
-  | { readonly kind: "recorded"; readonly id: string }
-  | { readonly kind: "duplicate"; readonly existingPaymentId: string };
+  | { readonly kind: 'recorded'; readonly id: string }
+  | { readonly kind: 'duplicate'; readonly existingPaymentId: string };
 
 export async function recordAttempt(
   config: ResolvedConfig,
@@ -54,26 +54,21 @@ export async function recordAttempt(
       amount: input.amount.toString(),
       blockNumber: input.blockNumber,
       status: input.status,
-      verifiedAt: input.status === "verified" ? now : null,
+      verifiedAt: input.status === 'verified' ? now : null,
       createdAt: now,
       updatedAt: now,
     });
-    return { kind: "recorded", id };
+    return { kind: 'recorded', id };
   } catch (err) {
-    if (isUniqueViolation(err, "transactions_chain_hash_unique")) {
+    if (isUniqueViolation(err, 'transactions_chain_hash_unique')) {
       const [existing] = await config.db
         .select({ paymentId: transactions.paymentId })
         .from(transactions)
-        .where(
-          and(
-            eq(transactions.chainId, input.chainId),
-            eq(transactions.hash, input.hash),
-          ),
-        )
+        .where(and(eq(transactions.chainId, input.chainId), eq(transactions.hash, input.hash)))
         .limit(1);
       return {
-        kind: "duplicate",
-        existingPaymentId: existing?.paymentId ?? "unknown",
+        kind: 'duplicate',
+        existingPaymentId: existing?.paymentId ?? 'unknown',
       };
     }
     throw err;
@@ -91,7 +86,7 @@ export async function recordAttempt(
 export function isUniqueViolation(err: unknown, constraint: string): boolean {
   if (!(err instanceof Error)) return false;
   const code = (err as { code?: string }).code;
-  if (code === "23505") return true;
+  if (code === '23505') return true;
   const msg = err.message.toLowerCase();
-  return msg.includes("duplicate key") && msg.includes(constraint.toLowerCase());
+  return msg.includes('duplicate key') && msg.includes(constraint.toLowerCase());
 }
