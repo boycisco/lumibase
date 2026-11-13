@@ -8,6 +8,8 @@
  * matches specs/payments/*.json exactly.
  */
 
+export { cancelPayment } from './cancel.ts';
+
 export {
   MAX_EXPIRES_IN,
   MAX_METADATA_BYTES,
@@ -19,6 +21,8 @@ export { paymentError } from './error.ts';
 
 export { resolveConfig } from './config.ts';
 export type { PaymentConfig, ResolvedConfig } from './config.ts';
+
+export { expirePayment, expirePending } from './expire.ts';
 
 export { DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT, getPayment, listPayments } from './read.ts';
 

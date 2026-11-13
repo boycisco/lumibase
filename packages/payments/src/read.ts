@@ -19,6 +19,7 @@ import { and, asc, desc, eq, type SQL } from 'drizzle-orm';
 import { payments } from '@lumibase/database';
 import type { ResolvedConfig } from './config.ts';
 import { paymentError } from './error.ts';
+import { rowToPayment } from './row.ts';
 import type { Payment, PaymentStatus } from './types.ts';
 
 /** Default page size for listPayments. */
@@ -40,14 +41,6 @@ interface ListPaymentsInput {
   readonly limit?: number;
 }
 
-/**
- * Fetch a single payment by ID, scoped to the given application.
- *
- * Throws PAYMENT_NOT_FOUND if the ID does not exist OR belongs to another
- * application. The two cases are intentionally indistinguishable to the
- * caller — this prevents an authenticated application from probing other
- * applications' payment IDs.
- */
 export async function getPayment(config: ResolvedConfig, input: GetPaymentInput): Promise<Payment> {
   const rows = await config.db
     .select()
@@ -62,20 +55,9 @@ export async function getPayment(config: ResolvedConfig, input: GetPaymentInput)
     });
   }
 
-  return toPayment(row);
+  return rowToPayment(row);
 }
 
-/**
- * List payments for an application.
- *
- * Filters are all optional. Missing filters do not narrow the result.
- * Order is createdAt DESC, id ASC for stable pagination when Phase 8
- * adds a cursor (v0.1 returns the most recent `limit` payments only).
- *
- * `limit` is clamped: values below 1 become DEFAULT_LIST_LIMIT; values
- * above MAX_LIST_LIMIT are clamped to MAX_LIST_LIMIT. Invalid
- * (non-integer) values throw PAYMENT_INVALID_STATE.
- */
 export async function listPayments(
   config: ResolvedConfig,
   input: ListPaymentsInput,
@@ -100,7 +82,7 @@ export async function listPayments(
     .orderBy(desc(payments.createdAt), asc(payments.id))
     .limit(limit);
 
-  return rows.map(toPayment);
+  return rows.map(rowToPayment);
 }
 
 function normalizeLimit(value: number | undefined): number {
@@ -110,28 +92,4 @@ function normalizeLimit(value: number | undefined): number {
   }
   if (value < 1) return DEFAULT_LIST_LIMIT;
   return Math.min(value, MAX_LIST_LIMIT);
-}
-
-/**
- * Convert a database row to the internal Payment shape. Amount goes
- * bigint (from numeric(78,0) string), dates are already Date (Drizzle
- * returns them as Date when column type is timestamptz), addresses are
- * stored lowercase and stay lowercase.
- */
-function toPayment(row: typeof payments.$inferSelect): Payment {
-  return {
-    id: row.id,
-    applicationId: row.applicationId,
-    reference: row.reference,
-    chainId: row.chainId,
-    tokenAddress: row.tokenAddress as `0x${string}`,
-    amount: BigInt(row.amount),
-    recipient: row.recipient as `0x${string}`,
-    payer: row.payer === null ? null : (row.payer as `0x${string}`),
-    status: row.status as PaymentStatus,
-    expiresAt: row.expiresAt,
-    metadata: (row.metadata as Record<string, unknown> | null) ?? null,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-  };
 }
