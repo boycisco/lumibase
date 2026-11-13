@@ -11,6 +11,9 @@
  *     doesn't get hammered.
  *   - a strict upper bound so an actually-broken RPC fails fast, not
  *     after endless retries.
+ *   - waitForBlock(): poll the chain head until it reaches a target depth,
+ *     because eth_blockNumber is eventually consistent even after a receipt
+ *     is available.
  *
  * Per spec section 16: "Do not retry invalid transactions indefinitely."
  * Per spec section 21: "RPC outages must not create false payment
@@ -29,7 +32,7 @@ import {
 } from 'viem';
 
 export interface ReadOptions {
-  /** Total attempts including the first. Default 3. */
+  /** Total attempts including the first. Default 3 (10 for waitForBlock). */
   readonly attempts?: number;
   /** Base delay in milliseconds for exponential backoff. Default 100. */
   readonly baseDelayMs?: number;
@@ -37,6 +40,8 @@ export interface ReadOptions {
 
 const DEFAULT_ATTEMPTS = 3;
 const DEFAULT_BASE_DELAY_MS = 100;
+const WAIT_ATTEMPTS = 10;
+const WAIT_BASE_DELAY_MS = 50;
 
 /**
  * Classify an error as transient (retry) or not (fail immediately).
@@ -131,4 +136,42 @@ export async function getReceipt(
  */
 export async function getBlockNumber(client: PublicClient, options?: ReadOptions): Promise<bigint> {
   return withRetry(() => client.getBlockNumber(), options);
+}
+
+/**
+ * Poll the chain head until it reaches at least `minBlock`, or timeout.
+ *
+ * Why this exists: eth_blockNumber is EVENTUALLY consistent. Even after
+ * a receipt for block N is available, eth_blockNumber may briefly report
+ * N-1 (or lower) for a few milliseconds. This is true for anvil and for
+ * real production RPC endpoints. Anywhere we want to compare a receipt's
+ * blockNumber against the chain head, we must first ensure the head has
+ * actually caught up, or we will get a nonsensical "currentBlock <
+ * receipt.blockNumber" result.
+ *
+ * This is a bounded poll: at most `attempts` calls, each with exponential
+ * backoff. If the head never reaches `minBlock`, we throw a clear error
+ * rather than silently proceeding with a stale head.
+ *
+ * Returns the observed block number once it is >= minBlock.
+ */
+export async function waitForBlock(
+  client: PublicClient,
+  minBlock: bigint,
+  options?: ReadOptions,
+): Promise<bigint> {
+  const attempts = options?.attempts ?? WAIT_ATTEMPTS;
+  const baseDelay = options?.baseDelayMs ?? WAIT_BASE_DELAY_MS;
+  let lastSeen = 0n;
+  for (let i = 0; i < attempts; i += 1) {
+    const head = await client.getBlockNumber();
+    if (head >= minBlock) return head;
+    lastSeen = head;
+    if (i < attempts - 1) await sleep(baseDelay * 2 ** i);
+  }
+  throw new Error(
+    `Chain head has not reached block ${minBlock} after ${attempts} attempts. ` +
+      `Last observed head: ${lastSeen}. ` +
+      `This usually indicates RPC latency or a stuck node.`,
+  );
 }
