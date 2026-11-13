@@ -179,6 +179,9 @@ importers:
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.38.4(@types/pg@8.23.1)(pg@8.23.1)
+      viem:
+        specifier: 'catalog:'
+        version: 2.57.19(typescript@5.9.3)(zod@3.25.76)
     devDependencies:
       '@types/node':
         specifier: 'catalog:'

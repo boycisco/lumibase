@@ -2,11 +2,12 @@
  * LumiBase Payments
  *
  * The flagship capability: accepting and verifying onchain USDC payments on
- * Base. Composes @lumibase/core (exact amounts, addresses, errors),
- * @lumibase/network (chain config, RPC reads, confirmation policy), and
- * @lumibase/database (persistence) into a payment service whose behavior
- * matches specs/payments/*.json exactly.
+ * Base. Composes @lumibase/core, @lumibase/network, and @lumibase/database
+ * into a payment service whose behavior matches specs/payments/*.json.
  */
+
+export { recordAttempt } from './attempt.ts';
+export type { AttemptStatus, RecordAttemptInput, RecordAttemptResult } from './attempt.ts';
 
 export { cancelPayment } from './cancel.ts';
 
@@ -39,6 +40,9 @@ export type {
   PaymentFailedReason,
   PaymentStatus,
 } from './types.ts';
+
+export { matchTransfers, verifyTransfers } from './verify.ts';
+export type { MatchVerdict, VerifyVerdict } from './verify.ts';
 
 export { toWirePayment } from './wire.ts';
 export type { WirePayment } from './wire.ts';

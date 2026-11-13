@@ -11,9 +11,7 @@
       "import": "./dist/index.js"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
@@ -24,7 +22,8 @@
     "@lumibase/core": "workspace:*",
     "@lumibase/database": "workspace:*",
     "@lumibase/network": "workspace:*",
-    "drizzle-orm": "catalog:"
+    "drizzle-orm": "catalog:",
+    "viem": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",
