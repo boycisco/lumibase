@@ -10,34 +10,23 @@
  * For v0.1, secretHash is the SHA-256 of the plaintext signing secret.
  */
 
-import {
-  boolean,
-  index,
-  pgTable,
-  text,
-  timestamp,
-  uuid,
-} from "drizzle-orm/pg-core";
-import { applications } from "./application.ts";
+import { boolean, index, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { applications } from './application.ts';
 
 export const webhooks = pgTable(
-  "webhooks",
+  'webhooks',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    applicationId: uuid("application_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    applicationId: uuid('application_id')
       .notNull()
-      .references(() => applications.id, { onDelete: "cascade" }),
-    endpoint: text("endpoint").notNull(),
-    secretHash: text("secret_hash").notNull(),
-    enabled: boolean("enabled").notNull().default(true),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+      .references(() => applications.id, { onDelete: 'cascade' }),
+    endpoint: text('endpoint').notNull(),
+    secretHash: text('secret_hash').notNull(),
+    enabled: boolean('enabled').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    appIdx: index("webhooks_app_idx").on(table.applicationId),
+    appIdx: index('webhooks_app_idx').on(table.applicationId),
   }),
 );

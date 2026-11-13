@@ -23,37 +23,30 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
-} from "drizzle-orm/pg-core";
-import { payments } from "./payment.ts";
+} from 'drizzle-orm/pg-core';
+import { payments } from './payment.ts';
 
 export const transactions = pgTable(
-  "transactions",
+  'transactions',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    paymentId: uuid("payment_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    paymentId: uuid('payment_id')
       .notNull()
-      .references(() => payments.id, { onDelete: "restrict" }),
-    chainId: integer("chain_id").notNull(),
-    hash: text("hash").notNull(),
-    sender: text("sender"),
-    recipient: text("recipient").notNull(),
-    tokenAddress: text("token_address").notNull(),
-    amount: numeric("amount", { precision: 78, scale: 0 }).notNull(),
-    blockNumber: bigint("block_number", { mode: "bigint" }),
-    status: text("status").notNull(),
-    verifiedAt: timestamp("verified_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+      .references(() => payments.id, { onDelete: 'restrict' }),
+    chainId: integer('chain_id').notNull(),
+    hash: text('hash').notNull(),
+    sender: text('sender'),
+    recipient: text('recipient').notNull(),
+    tokenAddress: text('token_address').notNull(),
+    amount: numeric('amount', { precision: 78, scale: 0 }).notNull(),
+    blockNumber: bigint('block_number', { mode: 'bigint' }),
+    status: text('status').notNull(),
+    verifiedAt: timestamp('verified_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    chainHashUnique: uniqueIndex("transactions_chain_hash_unique").on(
-      table.chainId,
-      table.hash,
-    ),
-    paymentIdx: index("transactions_payment_idx").on(table.paymentId),
+    chainHashUnique: uniqueIndex('transactions_chain_hash_unique').on(table.chainId, table.hash),
+    paymentIdx: index('transactions_payment_idx').on(table.paymentId),
   }),
 );

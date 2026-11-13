@@ -28,38 +28,31 @@ import {
   text,
   timestamp,
   uuid,
-} from "drizzle-orm/pg-core";
-import { applications } from "./application.ts";
+} from 'drizzle-orm/pg-core';
+import { applications } from './application.ts';
 
 export const payments = pgTable(
-  "payments",
+  'payments',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    applicationId: uuid("application_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    applicationId: uuid('application_id')
       .notNull()
-      .references(() => applications.id, { onDelete: "restrict" }),
-    reference: text("reference"),
-    chainId: integer("chain_id").notNull(),
-    tokenAddress: text("token_address").notNull(),
-    amount: numeric("amount", { precision: 78, scale: 0 }).notNull(),
-    recipient: text("recipient").notNull(),
-    payer: text("payer"),
-    status: text("status").notNull().default("pending"),
-    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-    metadata: jsonb("metadata"),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+      .references(() => applications.id, { onDelete: 'restrict' }),
+    reference: text('reference'),
+    chainId: integer('chain_id').notNull(),
+    tokenAddress: text('token_address').notNull(),
+    amount: numeric('amount', { precision: 78, scale: 0 }).notNull(),
+    recipient: text('recipient').notNull(),
+    payer: text('payer'),
+    status: text('status').notNull().default('pending'),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    metadata: jsonb('metadata'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    appStatusIdx: index("payments_app_status_idx").on(
-      table.applicationId,
-      table.status,
-    ),
-    expiresAtIdx: index("payments_expires_at_idx").on(table.expiresAt),
-    referenceIdx: index("payments_reference_idx").on(table.reference),
+    appStatusIdx: index('payments_app_status_idx').on(table.applicationId, table.status),
+    expiresAtIdx: index('payments_expires_at_idx').on(table.expiresAt),
+    referenceIdx: index('payments_reference_idx').on(table.reference),
   }),
 );

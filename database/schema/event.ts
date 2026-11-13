@@ -11,38 +11,26 @@
  * every event here is payment-scoped.
  */
 
-import {
-  index,
-  jsonb,
-  pgTable,
-  text,
-  timestamp,
-  uuid,
-} from "drizzle-orm/pg-core";
-import { applications } from "./application.ts";
-import { payments } from "./payment.ts";
+import { index, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { applications } from './application.ts';
+import { payments } from './payment.ts';
 
 export const events = pgTable(
-  "events",
+  'events',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    applicationId: uuid("application_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    applicationId: uuid('application_id')
       .notNull()
-      .references(() => applications.id, { onDelete: "cascade" }),
-    paymentId: uuid("payment_id").references(() => payments.id, {
-      onDelete: "cascade",
+      .references(() => applications.id, { onDelete: 'cascade' }),
+    paymentId: uuid('payment_id').references(() => payments.id, {
+      onDelete: 'cascade',
     }),
-    type: text("type").notNull(),
-    payload: jsonb("payload").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    type: text('type').notNull(),
+    payload: jsonb('payload').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    appCreatedIdx: index("events_app_created_idx").on(
-      table.applicationId,
-      table.createdAt,
-    ),
-    paymentIdx: index("events_payment_idx").on(table.paymentId),
+    appCreatedIdx: index('events_app_created_idx').on(table.applicationId, table.createdAt),
+    paymentIdx: index('events_payment_idx').on(table.paymentId),
   }),
 );

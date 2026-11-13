@@ -6,13 +6,13 @@
     "rootDir": ".",
     "outDir": "./dist"
   },
-  "include": ["client.ts", "index.ts", "schema/**/*.ts"],
+  "include": ["client.ts", "index.ts", "schema/**/*.ts", "tests/**/*.ts"],
   "exclude": [
     "node_modules",
     "dist",
-    "tests",
     "migrations",
     "seeds",
-    "drizzle.config.ts"
+    "drizzle.config.ts",
+    "vitest.config.ts"
   ]
 }
