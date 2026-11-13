@@ -1,31 +1,32 @@
 /**
  * Payment endpoints.
  *
- * Three routes, all requiring application auth (`Authorization: Bearer
- * <apiKey>`). Every handler:
+ * Routes:
+ *   POST   /api/v1/payments
+ *   GET    /api/v1/payments
+ *   GET    /api/v1/payments/:id
+ *   GET    /api/v1/payments/:id/status
+ *   POST   /api/v1/payments/:id/confirm
+ *   POST   /api/v1/payments/:id/cancel
  *
- *   1. Runs auth middleware (which throws UNAUTHORIZED on failure).
- *   2. Validates the request body / path with Zod.
- *   3. Converts wire format -> internal (amount string -> bigint).
- *   4. Calls the payments service.
- *   5. Converts internal -> wire format for the response.
- *
- * The conversion boundary is IMPORTANT: the wire format is defined by
- * specs/schemas/payment.json (a language-independent contract), while the
- * internal Payment type is a TypeScript implementation detail. If either
- * side changes, only this file needs to change.
- *
- * Note on GET /:id/status: per spec section 13, "Do not trigger
- * unnecessary blockchain scans on every status request." This handler
- * reads the persisted status; it never calls RPC. If the caller wants
- * verification, they must POST /:id/confirm (Batch 3).
+ * Every handler requires application auth. The wire <-> internal conversion
+ * is centralized in this file — a single boundary for the whole API.
  */
 
 import { z } from 'zod';
 import type { FastifyInstance } from 'fastify';
 import { deserializeAmount } from '@lumibase/core';
 import type { Database } from '@lumibase/database';
-import { createPayment, getPayment, toWirePayment, type ResolvedConfig } from '@lumibase/payments';
+import {
+  cancelPayment,
+  confirmPayment,
+  createPayment,
+  getPayment,
+  listPayments,
+  toWirePayment,
+  type PaymentStatus,
+  type ResolvedConfig,
+} from '@lumibase/payments';
 import { requireAppAuth } from './auth.ts';
 
 const createBody = z.object({
@@ -37,6 +38,30 @@ const createBody = z.object({
   reference: z.string().nullable().optional(),
   expiresIn: z.number().int().positive(),
   metadata: z.record(z.unknown()).nullable().optional(),
+});
+
+const confirmBody = z.object({
+  transactionHash: z.string().regex(/^0x[0-9a-fA-F]{64}$/, {
+    message: 'transactionHash must be 0x followed by 64 hex characters.',
+  }),
+});
+
+const listQuery = z.object({
+  status: z
+    .enum([
+      'pending',
+      'processing',
+      'confirmed',
+      'expired',
+      'failed',
+      'cancelled',
+      'underpaid',
+      'overpaid',
+    ])
+    .optional(),
+  reference: z.string().optional(),
+  chainId: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().positive().optional(),
 });
 
 interface Params {
@@ -63,8 +88,6 @@ export function registerPayments(
     }
     const body = parsed.data;
 
-    // Wire amount string -> internal bigint. deserializeAmount rejects
-    // malformed input, non-canonical values, and values above uint256.
     const amount = deserializeAmount(body.amount);
 
     const payment = await createPayment(payments, {
@@ -82,6 +105,34 @@ export function registerPayments(
     return reply.status(201).send(toWirePayment(payment));
   });
 
+  app.get('/api/v1/payments', async (request, reply) => {
+    await requireAppAuth(db, request, reply);
+
+    const parsed = listQuery.safeParse(request.query);
+    if (!parsed.success) {
+      return reply.status(400).send({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid query parameters.',
+          requestId: request.id,
+        },
+      });
+    }
+    const query = parsed.data;
+
+    const payments_ = await listPayments(payments, {
+      applicationId: request.applicationId!,
+      ...(query.status !== undefined ? { status: query.status as PaymentStatus } : {}),
+      ...(query.reference !== undefined ? { reference: query.reference } : {}),
+      ...(query.chainId !== undefined ? { chainId: query.chainId } : {}),
+      ...(query.limit !== undefined ? { limit: query.limit } : {}),
+    });
+
+    return reply.status(200).send({
+      payments: payments_.map(toWirePayment),
+    });
+  });
+
   app.get<{ Params: Params }>('/api/v1/payments/:id', async (request, reply) => {
     await requireAppAuth(db, request, reply);
     const payment = await getPayment(payments, {
@@ -97,11 +148,47 @@ export function registerPayments(
       paymentId: request.params.id,
       applicationId: request.applicationId!,
     });
-    // Lightweight status-only payload. No RPC.
     return reply.status(200).send({
       id: payment.id,
       status: payment.status,
       updatedAt: payment.updatedAt.toISOString(),
     });
+  });
+
+  app.post<{ Params: Params }>('/api/v1/payments/:id/confirm', async (request, reply) => {
+    await requireAppAuth(db, request, reply);
+
+    const parsed = confirmBody.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.status(400).send({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'transactionHash must be 0x followed by 64 hex characters.',
+          requestId: request.id,
+        },
+      });
+    }
+
+    const result = await confirmPayment(payments, {
+      paymentId: request.params.id,
+      applicationId: request.applicationId!,
+      transactionHash: parsed.data.transactionHash as `0x${string}`,
+    });
+
+    return reply.status(200).send({
+      payment: toWirePayment(result.payment),
+      error: result.error,
+    });
+  });
+
+  app.post<{ Params: Params }>('/api/v1/payments/:id/cancel', async (request, reply) => {
+    await requireAppAuth(db, request, reply);
+
+    const payment = await cancelPayment(payments, {
+      paymentId: request.params.id,
+      applicationId: request.applicationId!,
+    });
+
+    return reply.status(200).send(toWirePayment(payment));
   });
 }
