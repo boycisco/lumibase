@@ -3,26 +3,21 @@
  *
  * Accepts a CreatePaymentInput, validates every field, persists the payment
  * and its payment.created event atomically, and returns the internal
- * Payment object. The caller (the API layer in Phase 8) is responsible for
- * converting to wire format for the response.
+ * Payment object.
  *
- * Validation order: shape (400) -> addresses (400) -> semantic (422) ->
- * persistence. Every rejection happens before the DB is touched.
- *
- * The payment row and its payment.created event are written in a SINGLE
- * database transaction (Option B from Phase 6 design). If either insert
- * fails, both roll back.
- *
- * `applicationId` is assumed to have been authenticated by the caller
- * (Phase 8). The FK constraint on payments.application_id is defense in
- * depth against a missing application.
+ * Validation order (intentional):
+ *   1. Shape (VALIDATION_ERROR, 400): amount, expiresIn, reference, metadata
+ *   2. Addresses (VALIDATION_ERROR, 400): EIP-55 checksums
+ *   3. Semantic (specific codes, 422): chain enabled, token registered
+ *   4. Persistence: payment + event + deliveries (via recordEvent) in one txn
  */
 
 import { normalizeAddress, serializeAmount, validationError } from '@lumibase/core';
-import { events, payments } from '@lumibase/database';
+import { payments } from '@lumibase/database';
 import { findToken } from '@lumibase/network';
 import type { ResolvedConfig } from './config.ts';
 import { paymentError } from './error.ts';
+import { recordEvent } from './notify.ts';
 import type { CreatePaymentInput, Payment } from './types.ts';
 import { toWirePayment } from './wire.ts';
 
@@ -33,9 +28,8 @@ export const MAX_EXPIRES_IN = 30 * 24 * 60 * 60;
 export const MAX_METADATA_BYTES = 8 * 1024;
 
 /** 256 chars per specs/schemas/payment.json reference.maxLength. */
-export const MAX_REFERENCE_LENGTH = 256; /**
- * Create a new payment request in pending state.
- */
+export const MAX_REFERENCE_LENGTH = 256;
+
 export async function createPayment(
   config: ResolvedConfig,
   input: CreatePaymentInput,
@@ -83,6 +77,7 @@ export async function createPayment(
       );
     }
   }
+
   // ---- 2. Address validation ----
 
   const recipient = normalizeAddress(input.recipient) as `0x${string}`;
@@ -122,6 +117,7 @@ export async function createPayment(
       { chainId: input.chainId, symbol: token.symbol },
     );
   }
+
   // ---- 4. Persistence ----
 
   const id = config.idGenerator();
@@ -163,7 +159,7 @@ export async function createPayment(
       updatedAt: payment.updatedAt,
     });
 
-    await tx.insert(events).values({
+    await recordEvent(config, tx, {
       id: eventId,
       applicationId: payment.applicationId,
       paymentId: payment.id,

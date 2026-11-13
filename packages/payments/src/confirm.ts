@@ -1,29 +1,28 @@
 /**
- * Confirm service — the orchestration of the entire verification flow.
+ * Confirm service.
  *
  * 1. Read payment (filtered by application)
  * 2. Terminal -> idempotent return
- * 3. Processing -> PAYMENT_VERIFICATION_IN_PROGRESS (concurrent policy b)
+ * 3. Processing -> PAYMENT_VERIFICATION_IN_PROGRESS
  * 4. Pending + expired -> CAS to expired + emit, return PAYMENT_EXPIRED
- * 5. Claim: CAS pending -> processing + emit payment.processing
- * 6. Fetch receipt (RPC); missing -> revert, return TRANSACTION_NOT_FOUND
- * 7. waitForBlock + verifyTransfers (Phase 5 primitives)
- * 8. Branch on verdict: finalize (atomic CAS+attempt+event) or
- *    reject (CAS + attempt; no event, state goes back to pending)
+ * 5. Claim: CAS pending -> processing + recordEvent(payment.processing)
+ * 6. Fetch receipt; missing -> revert, return TRANSACTION_NOT_FOUND
+ * 7. waitForBlock + verifyTransfers
+ * 8. Branch: finalize (CAS + attempt + recordEvent(final)) or reject
  *
- * Security: the ONLY thing trusted from the caller is (paymentId,
- * applicationId, transactionHash). Every fact about the chain — success,
- * recipient, amount, sender, confirmations — is re-derived from RPC.
+ * recordEvent is used for the two lifecycle events emitted here so their
+ * webhook deliveries are scheduled in the same transaction as the event.
  */
 
 import type { PublicClient, TransactionReceipt } from 'viem';
 import { and, eq } from 'drizzle-orm';
-import { events, payments, transactions } from '@lumibase/database';
+import { payments, transactions } from '@lumibase/database';
 import { createClient, getReceipt, waitForBlock, type Erc20Transfer } from '@lumibase/network';
 import type { ResolvedConfig } from './config.ts';
 import { expirePayment } from './expire.ts';
-import { getPayment } from './read.ts';
 import { isUniqueViolation } from './attempt.ts';
+import { recordEvent } from './notify.ts';
+import { getPayment } from './read.ts';
 import { rowToPayment } from './row.ts';
 import { toWirePayment } from './wire.ts';
 import { verifyTransfers } from './verify.ts';
@@ -35,57 +34,35 @@ export interface ConfirmInput {
   readonly transactionHash: `0x${string}`;
 }
 
-/**
- * Result of a confirm attempt.
- *
- * `payment.status` is the state AFTER the attempt:
- *   - confirmed/underpaid/overpaid -> attempt succeeded
- *   - pending                     -> attempt failed; `error` says why
- *   - terminal from a prior call  -> idempotent return
- *
- * `error` is null on success or idempotent terminal return; non-null when
- * the payment is still pending due to a rejected attempt.
- */
 export interface ConfirmResult {
   readonly payment: Payment;
   readonly error: PaymentErrorCode | null;
 }
 
-/**
- * Confirm a payment using blockchain evidence.
- *
- * Accepts a hash, ignores every other client-claimed fact, and returns the
- * payment after verification. See file header for the full flow.
- */
 export async function confirmPayment(
   config: ResolvedConfig,
   input: ConfirmInput,
 ): Promise<ConfirmResult> {
   const now = config.clock();
 
-  // 1. Read payment (throws PAYMENT_NOT_FOUND if not this app's)
   const payment = await getPayment(config, {
     paymentId: input.paymentId,
     applicationId: input.applicationId,
   });
 
-  // 2. Terminal -> idempotent return
   if (TERMINAL_STATUSES.has(payment.status)) {
     return { payment, error: null };
   }
 
-  // 3. Processing -> another confirm is in flight
   if (payment.status === 'processing') {
     return { payment, error: 'PAYMENT_VERIFICATION_IN_PROGRESS' };
   }
 
-  // 4. Pending + expired -> CAS to expired
   if (payment.expiresAt <= now) {
     const expired = await expirePayment(config, payment.id);
     if (expired) {
       return { payment: expired, error: 'PAYMENT_EXPIRED' };
     }
-    // Raced with another operation; re-read
     const current = await getPayment(config, {
       paymentId: input.paymentId,
       applicationId: input.applicationId,
@@ -93,18 +70,12 @@ export async function confirmPayment(
     return handleNonPendingState(current);
   }
 
-  // 5. Claim: CAS pending -> processing
   const claimed = await claim(config, payment, input.transactionHash);
   if (!claimed.ok) return claimed.result;
 
-  // 6-8. Verify
   return await verify(config, claimed.payment, input.transactionHash);
 }
 
-/**
- * Map a payment's current status to a ConfirmResult without verification.
- * Used when our CAS fails because someone else moved the state first.
- */
 function handleNonPendingState(payment: Payment): ConfirmResult {
   if (TERMINAL_STATUSES.has(payment.status)) {
     return { payment, error: null };
@@ -115,11 +86,6 @@ function handleNonPendingState(payment: Payment): ConfirmResult {
   return { payment, error: 'PAYMENT_INVALID_STATE' };
 }
 
-/**
- * Atomically claim a pending payment for processing and emit
- * payment.processing in the SAME transaction. On CAS failure, re-read and
- * return the current state without verification.
- */
 async function claim(
   config: ResolvedConfig,
   payment: Payment,
@@ -134,7 +100,7 @@ async function claim(
       .returning();
     if (!row) return null;
     const claimed = rowToPayment(row);
-    await tx.insert(events).values({
+    await recordEvent(config, tx, {
       id: config.idGenerator(),
       applicationId: payment.applicationId,
       paymentId: payment.id,
@@ -157,9 +123,6 @@ async function claim(
   return { ok: false, result: handleNonPendingState(current) };
 }
 
-/**
- * Fetch receipt, verify, and dispatch on verdict.
- */
 async function verify(
   config: ResolvedConfig,
   payment: Payment,
@@ -220,11 +183,6 @@ async function verify(
   }
 }
 
-/**
- * Revert processing -> pending with the given error. No attempt record, no
- * event — the payment is back to where it started and the caller has the
- * error in the ConfirmResult.
- */
 async function revert(
   config: ResolvedConfig,
   payment: Payment,
@@ -242,13 +200,6 @@ async function revert(
   return { payment: rowToPayment(row), error };
 }
 
-/**
- * Reject an attempt that was definitively wrong (wrong recipient, reverted,
- * etc.). Payment returns to pending; the attempt is recorded for audit but
- * a hash collision with another payment downgrades to
- * TRANSACTION_ALREADY_PROCESSED. No event is emitted — the payment's
- * status is back to pending, which is where it started.
- */
 async function reject(
   config: ResolvedConfig,
   payment: Payment,
@@ -257,7 +208,6 @@ async function reject(
 ): Promise<ConfirmResult> {
   const now = config.clock();
 
-  // CAS processing -> pending
   const [row] = await config.db
     .update(payments)
     .set({ status: 'pending', updatedAt: now })
@@ -295,13 +245,6 @@ async function reject(
   return { payment: rowToPayment(row), error: actualError };
 }
 
-/**
- * Finalize a successful verification: CAS processing -> confirmed/underpaid/
- * overpaid + record the attempt + emit the final event, all atomically.
- *
- * A hash collision with another payment rolls back the entire transaction
- * and re-runs as a reject(TRANSACTION_ALREADY_PROCESSED).
- */
 async function finalize(
   config: ResolvedConfig,
   payment: Payment,
@@ -339,7 +282,7 @@ async function finalize(
         updatedAt: now,
       });
 
-      await tx.insert(events).values({
+      await recordEvent(config, tx, {
         id: config.idGenerator(),
         applicationId: payment.applicationId,
         paymentId: payment.id,
