@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lumibase.dev/schemas/event.json",
+  "title": "LumiBase Event",
+  "description": "Machine-readable JSON Schema for webhook event envelopes in LumiBase v0.1. The envelope shape is fixed; per-type data requirements are enforced via if/then. See specs/payments/events.json for the human-readable event catalog.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "createdAt", "data"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "type": {
+      "type": "string",
+      "enum": [
+        "payment.created",
+        "payment.processing",
+        "payment.confirmed",
+        "payment.failed",
+        "payment.expired",
+        "payment.underpaid",
+        "payment.overpaid"
+      ]
+    },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "data": { "type": "object" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "type": { "const": "payment.created" } } },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": ["payment"],
+            "properties": { "payment": { "type": "object" } }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "payment.processing" } } },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": ["payment", "transactionHash"],
+            "properties": {
+              "payment": { "type": "object" },
+              "transactionHash": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "payment.confirmed" } } },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": ["payment", "transaction"],
+            "properties": {
+              "payment": { "type": "object" },
+              "transaction": { "type": "object" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "payment.failed" } } },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": ["payment", "reason"],
+            "properties": {
+              "payment": { "type": "object" },
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "RECIPIENT_MISMATCH",
+                  "TOKEN_MISMATCH",
+                  "SENDER_MISMATCH",
+                  "TRANSACTION_REVERTED",
+                  "INSUFFICIENT_CONFIRMATIONS",
+                  "VERIFICATION_TIMEOUT",
+                  "TRANSACTION_ALREADY_PROCESSED"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "payment.expired" } } },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": ["payment"],
+            "properties": { "payment": { "type": "object" } }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "payment.underpaid" } } },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": ["payment", "transaction"],
+            "properties": {
+              "payment": { "type": "object" },
+              "transaction": { "type": "object" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "payment.overpaid" } } },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": ["payment", "transaction"],
+            "properties": {
+              "payment": { "type": "object" },
+              "transaction": { "type": "object" }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,136 @@
+[
+  {
+    "name": "payment-created",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000000",
+      "type": "payment.created",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "data": {
+        "payment": { "id": "550e8400-e29b-41d4-a716-446655440000", "status": "pending" }
+      }
+    }
+  },
+  {
+    "name": "payment-processing",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000001",
+      "type": "payment.processing",
+      "createdAt": "2025-11-13T19:30:05Z",
+      "data": {
+        "payment": { "id": "550e8400-e29b-41d4-a716-446655440000", "status": "processing" },
+        "transactionHash": "0x1111111111111111111111111111111111111111111111111111111111111111"
+      }
+    }
+  },
+  {
+    "name": "payment-confirmed",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000002",
+      "type": "payment.confirmed",
+      "createdAt": "2025-11-13T19:31:00Z",
+      "data": {
+        "payment": { "id": "550e8400-e29b-41d4-a716-446655440000", "status": "confirmed" },
+        "transaction": {
+          "hash": "0x1111111111111111111111111111111111111111111111111111111111111111"
+        }
+      }
+    }
+  },
+  {
+    "name": "payment-expired",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000003",
+      "type": "payment.expired",
+      "createdAt": "2025-11-13T20:00:05Z",
+      "data": {
+        "payment": { "id": "550e8400-e29b-41d4-a716-446655440000", "status": "expired" }
+      }
+    }
+  },
+  {
+    "name": "payment-underpaid",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000004",
+      "type": "payment.underpaid",
+      "createdAt": "2025-11-13T19:32:00Z",
+      "data": {
+        "payment": { "id": "550e8400-e29b-41d4-a716-446655440000", "status": "underpaid" },
+        "transaction": {
+          "hash": "0x2222222222222222222222222222222222222222222222222222222222222222"
+        }
+      }
+    }
+  },
+  {
+    "name": "payment-overpaid",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000005",
+      "type": "payment.overpaid",
+      "createdAt": "2025-11-13T19:32:05Z",
+      "data": {
+        "payment": { "id": "550e8400-e29b-41d4-a716-446655440000", "status": "overpaid" },
+        "transaction": {
+          "hash": "0x3333333333333333333333333333333333333333333333333333333333333333"
+        }
+      }
+    }
+  },
+  {
+    "name": "payment-failed-with-recipient-mismatch",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000006",
+      "type": "payment.failed",
+      "createdAt": "2025-11-13T19:33:00Z",
+      "data": {
+        "payment": { "id": "550e8400-e29b-41d4-a716-446655440000", "status": "failed" },
+        "reason": "RECIPIENT_MISMATCH"
+      }
+    }
+  },
+  {
+    "name": "payment-failed-with-transaction-reverted",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000007",
+      "type": "payment.failed",
+      "createdAt": "2025-11-13T19:33:05Z",
+      "data": {
+        "payment": { "id": "550e8400-e29b-41d4-a716-446655440000", "status": "failed" },
+        "reason": "TRANSACTION_REVERTED"
+      }
+    }
+  },
+  {
+    "name": "payment-created-with-metadata",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000008",
+      "type": "payment.created",
+      "createdAt": "2025-11-13T19:34:00Z",
+      "data": {
+        "payment": {
+          "id": "550e8400-e29b-41d4-a716-446655440000",
+          "status": "pending",
+          "metadata": { "orderId": "1234" }
+        }
+      }
+    }
+  },
+  {
+    "name": "payment-confirmed-extended",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000009",
+      "type": "payment.confirmed",
+      "createdAt": "2025-11-13T19:35:00Z",
+      "data": {
+        "payment": {
+          "id": "550e8400-e29b-41d4-a716-446655440000",
+          "status": "confirmed",
+          "amount": "1500000"
+        },
+        "transaction": {
+          "hash": "0x4444444444444444444444444444444444444444444444444444444444444444",
+          "blockNumber": "12345678"
+        }
+      }
+    }
+  }
+]

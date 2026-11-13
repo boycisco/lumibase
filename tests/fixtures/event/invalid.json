@@ -1,0 +1,125 @@
+[
+  {
+    "name": "missing-id",
+    "event": {
+      "type": "payment.created",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "data": { "payment": {} }
+    }
+  },
+  {
+    "name": "missing-type",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000000",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "data": { "payment": {} }
+    }
+  },
+  {
+    "name": "missing-created-at",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000000",
+      "type": "payment.created",
+      "data": { "payment": {} }
+    }
+  },
+  {
+    "name": "missing-data",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000000",
+      "type": "payment.created",
+      "createdAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "bad-uuid-id",
+    "event": {
+      "id": "not-a-uuid",
+      "type": "payment.created",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "data": { "payment": {} }
+    }
+  },
+  {
+    "name": "bad-type",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000000",
+      "type": "payment.unknown",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "data": { "payment": {} }
+    }
+  },
+  {
+    "name": "bad-created-at",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000000",
+      "type": "payment.created",
+      "createdAt": "not-a-date",
+      "data": { "payment": {} }
+    }
+  },
+  {
+    "name": "data-not-object",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000000",
+      "type": "payment.created",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "data": "not-an-object"
+    }
+  },
+  {
+    "name": "extra-field",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000000",
+      "type": "payment.created",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "data": { "payment": {} },
+      "extra": "field"
+    }
+  },
+  {
+    "name": "processing-without-transaction-hash",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000000",
+      "type": "payment.processing",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "data": { "payment": {} }
+    }
+  },
+  {
+    "name": "confirmed-without-transaction",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000000",
+      "type": "payment.confirmed",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "data": { "payment": {} }
+    }
+  },
+  {
+    "name": "expired-without-payment",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000000",
+      "type": "payment.expired",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "data": {}
+    }
+  },
+  {
+    "name": "failed-without-reason",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000000",
+      "type": "payment.failed",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "data": { "payment": {} }
+    }
+  },
+  {
+    "name": "failed-bad-reason",
+    "event": {
+      "id": "a0000000-0000-4000-8000-000000000000",
+      "type": "payment.failed",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "data": { "payment": {}, "reason": "SOMETHING_ELSE" }
+    }
+  }
+]
