@@ -21,20 +21,20 @@ The first flagship capability is **Payments**: a secure, independently-verified 
 
 ## Repository status
 
-| Phase | Status |
-|---|---|
-| 1. Repository foundation | Complete |
-| 2. Core package | Not started |
-| 3. Payment specifications | Not started |
-| 4. Database foundation | Not started |
-| 5. Blockchain foundation | Not started |
-| 6. Payment service | Not started |
-| 7. Payment verification | Not started |
-| 8. API implementation | Not started |
+| Phase                               | Status      |
+| ----------------------------------- | ----------- |
+| 1. Repository foundation            | Complete    |
+| 2. Core package                     | Not started |
+| 3. Payment specifications           | Not started |
+| 4. Database foundation              | Not started |
+| 5. Blockchain foundation            | Not started |
+| 6. Payment service                  | Not started |
+| 7. Payment verification             | Not started |
+| 8. API implementation               | Not started |
 | 9. Event and webhook infrastructure | Not started |
-| 10. Payment demonstration | Not started |
-| 11. Documentation | Not started |
-| 12. Release preparation | Not started |
+| 10. Payment demonstration           | Not started |
+| 11. Documentation                   | Not started |
+| 12. Release preparation             | Not started |
 
 ## Development
 
