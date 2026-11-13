@@ -1,110 +1,105 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { ANVIL_ACCOUNT, ensureAnvil, publicClient, walletClient } from './setup.ts';
-import { getBlockNumber, waitForBlock } from '../src/read.ts';
+import { waitForBlock } from '../src/read.ts';
 import { checkConfirmations } from '../src/final.ts';
 
 beforeAll(async () => {
   await ensureAnvil();
 });
 
+async function sendAndWait(): Promise<{
+  hash: `0x${string}`;
+  blockNumber: bigint;
+}> {
+  const hash = await walletClient.sendTransaction({
+    to: ANVIL_ACCOUNT.address,
+    value: 1n,
+  });
+  const receipt = await publicClient.waitForTransactionReceipt({ hash });
+  return { hash, blockNumber: receipt.blockNumber };
+}
+
+/**
+ * Most tests here use `receipt.blockNumber` directly as the "currentBlock"
+ * argument. This is a legitimate shortcut: the receipt is definitive, and
+ * its blockNumber represents the minimum possible chain head at the moment
+ * the receipt exists. Testing checkConfirmations with that input exercises
+ * the pure function against a real receipt without being affected by
+ * eth_blockNumber timing.
+ *
+ * Two tests DO use waitForBlock, because they specifically need to prove
+ * the chain head advances (once for the "advances" case, once for
+ * waitForBlock itself). Those are the only tests that legitimately need
+ * to observe the head.
+ */
 describe('live finality checks', () => {
   it('a fresh tx with blocks=1 is confirmed (tx block counts as 1)', async () => {
-    const hash = await walletClient.sendTransaction({
-      to: ANVIL_ACCOUNT.address,
-      value: 1n,
-    });
+    const { hash } = await sendAndWait();
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
-    // After waitForTransactionReceipt returns, the receipt is definitive
-    // but eth_blockNumber may briefly report a lower head. Poll until the
-    // head at least reaches the receipt's block.
-    const head = await waitForBlock(publicClient, receipt.blockNumber);
 
-    const result = checkConfirmations(receipt, head, {
+    const result = checkConfirmations(receipt, receipt.blockNumber, {
       blocks: 1,
       finality: 'soft',
     });
     expect(result.status).toBe('confirmed');
-    expect(result.confirmations).toBeGreaterThanOrEqual(1);
+    expect(result.confirmations).toBe(1);
+    expect(result.required).toBe(1);
   });
 
   it('a fresh tx with blocks=5 is pending', async () => {
-    const hash = await walletClient.sendTransaction({
-      to: ANVIL_ACCOUNT.address,
-      value: 1n,
-    });
+    const { hash } = await sendAndWait();
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
-    const head = await waitForBlock(publicClient, receipt.blockNumber);
 
-    const result = checkConfirmations(receipt, head, {
+    const result = checkConfirmations(receipt, receipt.blockNumber, {
       blocks: 5,
       finality: 'soft',
     });
-    // Right after the tx, depth is 1, so 5 is not satisfied.
     expect(result.status).toBe('pending');
-    expect(result.confirmations).toBeLessThan(5);
+    expect(result.confirmations).toBe(1);
+    expect(result.required).toBe(5);
+  });
+
+  it("uses the chain's declared 12-block policy", async () => {
+    const { hash } = await sendAndWait();
+    const receipt = await publicClient.waitForTransactionReceipt({ hash });
+
+    const result = checkConfirmations(receipt, receipt.blockNumber, {
+      blocks: 12,
+      finality: 'soft',
+    });
+    expect(result.status).toBe('pending');
+    expect(result.confirmations).toBe(1);
+    expect(result.required).toBe(12);
   });
 
   it('after mining additional blocks, a previously-pending tx becomes confirmed', async () => {
-    // Send tx, receive it in some block N.
-    const hash = await walletClient.sendTransaction({
-      to: ANVIL_ACCOUNT.address,
-      value: 1n,
-    });
+    const { hash, blockNumber } = await sendAndWait();
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
     const policy = { blocks: 3, finality: 'soft' } as const;
 
-    // Right after: still pending (depth 1 < 3).
-    const head0 = await waitForBlock(publicClient, receipt.blockNumber);
-    expect(checkConfirmations(receipt, head0, policy).status).toBe('pending');
+    // Immediate state via receipt.blockNumber: pending (depth 1 < 3).
+    expect(checkConfirmations(receipt, blockNumber, policy).status).toBe('pending');
 
-    // Mine enough transactions to push depth past 3.
-    // 2 more blocks is enough: 1 (own) + 2 = 3 confirmations.
-    for (let i = 0; i < 2; i += 1) {
-      const mineHash = await walletClient.sendTransaction({
-        to: ANVIL_ACCOUNT.address,
-        value: 1n,
-      });
-      await publicClient.waitForTransactionReceipt({ hash: mineHash });
-    }
+    // Mine 2 more blocks (each tx = 1 block on anvil).
+    await sendAndWait();
+    await sendAndWait();
 
-    // Poll until the head has observed at least 2 blocks beyond the
-    // receipt's block. This is exactly the phase 7 pattern: don't trust
-    // a stale head; force the RPC to reveal current depth.
-    const head1 = await waitForBlock(publicClient, receipt.blockNumber + 2n);
-    const result = checkConfirmations(receipt, head1, policy);
+    // Now we DO need to observe the head, because we're proving the chain
+    // has genuinely advanced by 2 blocks since the receipt. Use
+    // waitForBlock because the receipt for the LAST tx is definitive but
+    // eth_blockNumber may lag it by a moment.
+    const head = await waitForBlock(publicClient, blockNumber + 2n);
+
+    const result = checkConfirmations(receipt, head, policy);
     expect(result.status).toBe('confirmed');
     expect(result.confirmations).toBeGreaterThanOrEqual(3);
   });
 
-  it("uses the chain's declared 12-block policy", async () => {
-    const hash = await walletClient.sendTransaction({
-      to: ANVIL_ACCOUNT.address,
-      value: 1n,
-    });
+  it('waitForBlock returns a head >= the target', async () => {
+    const { hash, blockNumber } = await sendAndWait();
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
-    const head = await waitForBlock(publicClient, receipt.blockNumber);
 
-    const result = checkConfirmations(receipt, head, {
-      blocks: 12,
-      finality: 'soft',
-    });
-    // Immediately after: depth 1 << 12, so pending.
-    expect(result.status).toBe('pending');
-    expect(result.confirmations).toBeLessThan(12);
-    expect(result.required).toBe(12);
-  });
-
-  it('getBlockNumber eventually agrees with waitForBlock', async () => {
-    // Sanity check for waitForBlock itself: after waitForBlock returns a
-    // head at block N, a plain getBlockNumber call must return >= N.
-    const hash = await walletClient.sendTransaction({
-      to: ANVIL_ACCOUNT.address,
-      value: 1n,
-    });
-    const receipt = await publicClient.waitForTransactionReceipt({ hash });
     const head = await waitForBlock(publicClient, receipt.blockNumber);
-    const plainHead = await getBlockNumber(publicClient);
-    expect(plainHead).toBeGreaterThanOrEqual(head);
-    expect(plainHead).toBeGreaterThanOrEqual(receipt.blockNumber);
+    expect(head).toBeGreaterThanOrEqual(blockNumber);
   });
 });

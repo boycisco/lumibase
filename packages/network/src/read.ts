@@ -11,9 +11,19 @@
  *     doesn't get hammered.
  *   - a strict upper bound so an actually-broken RPC fails fast, not
  *     after endless retries.
- *   - waitForBlock(): poll the chain head until it reaches a target depth,
- *     because eth_blockNumber is eventually consistent even after a receipt
- *     is available.
+ *   - waitForBlock(): fixed-interval poll of the chain head until it
+ *     reaches a target depth. eth_blockNumber is eventually consistent,
+ *     even after a receipt is available.
+ *
+ * Two DIFFERENT retry strategies, by design:
+ *
+ *   - withRetry (exponential backoff) is for ERROR handling: "the RPC
+ *     might be temporarily down; back off so we don't hammer it."
+ *
+ *   - waitForBlock (fixed interval) is for STATE WAITING: "the head is
+ *     stale but not broken; check frequently until it catches up." Using
+ *     exponential backoff here is wrong — it adds 50+100+200+400+800+
+ *     ... delays when the state might just need one more check.
  *
  * Per spec section 16: "Do not retry invalid transactions indefinitely."
  * Per spec section 21: "RPC outages must not create false payment
@@ -32,23 +42,26 @@ import {
 } from 'viem';
 
 export interface ReadOptions {
-  /** Total attempts including the first. Default 3 (10 for waitForBlock). */
+  /** Total attempts including the first. Default 3. */
   readonly attempts?: number;
   /** Base delay in milliseconds for exponential backoff. Default 100. */
   readonly baseDelayMs?: number;
 }
 
+export interface WaitForBlockOptions {
+  /** Poll interval in milliseconds. Default 100. */
+  readonly intervalMs?: number;
+  /** Total time budget in milliseconds. Default 10000. */
+  readonly timeoutMs?: number;
+}
+
 const DEFAULT_ATTEMPTS = 3;
 const DEFAULT_BASE_DELAY_MS = 100;
-const WAIT_ATTEMPTS = 10;
-const WAIT_BASE_DELAY_MS = 50;
+const DEFAULT_WAIT_INTERVAL_MS = 100;
+const DEFAULT_WAIT_TIMEOUT_MS = 10_000;
 
 /**
  * Classify an error as transient (retry) or not (fail immediately).
- *
- * Deliberately conservative: only errors that are genuinely network-shaped
- * or rate-limit-shaped are retried. Anything else fails fast so bugs
- * surface, not hide.
  */
 function isTransient(err: unknown): boolean {
   if (!(err instanceof Error)) return false;
@@ -139,39 +152,45 @@ export async function getBlockNumber(client: PublicClient, options?: ReadOptions
 }
 
 /**
- * Poll the chain head until it reaches at least `minBlock`, or timeout.
+ * Poll the chain head until it reaches at least `minBlock`.
+ *
+ * Semantics:
+ *   - Fixed interval polling (default 100ms). NOT exponential backoff,
+ *     because we're waiting on STATE, not retrying an ERROR.
+ *   - Hard timeout (default 10s) — the caller must not hang forever.
+ *   - Returns the observed head once it is >= minBlock.
+ *   - Throws on timeout with a clear error message.
  *
  * Why this exists: eth_blockNumber is EVENTUALLY consistent. Even after
  * a receipt for block N is available, eth_blockNumber may briefly report
- * N-1 (or lower) for a few milliseconds. This is true for anvil and for
- * real production RPC endpoints. Anywhere we want to compare a receipt's
- * blockNumber against the chain head, we must first ensure the head has
- * actually caught up, or we will get a nonsensical "currentBlock <
- * receipt.blockNumber" result.
- *
- * This is a bounded poll: at most `attempts` calls, each with exponential
- * backoff. If the head never reaches `minBlock`, we throw a clear error
- * rather than silently proceeding with a stale head.
- *
- * Returns the observed block number once it is >= minBlock.
+ * N-1 or lower. This is true for anvil and for real production RPCs. Any
+ * caller that wants to compare a receipt's blockNumber against the chain
+ * head must first ensure the head has caught up, or it will see a stale
+ * value.
  */
 export async function waitForBlock(
   client: PublicClient,
   minBlock: bigint,
-  options?: ReadOptions,
+  options: WaitForBlockOptions = {},
 ): Promise<bigint> {
-  const attempts = options?.attempts ?? WAIT_ATTEMPTS;
-  const baseDelay = options?.baseDelayMs ?? WAIT_BASE_DELAY_MS;
+  const intervalMs = options.intervalMs ?? DEFAULT_WAIT_INTERVAL_MS;
+  const timeoutMs = options.timeoutMs ?? DEFAULT_WAIT_TIMEOUT_MS;
+  const start = Date.now();
   let lastSeen = 0n;
-  for (let i = 0; i < attempts; i += 1) {
+
+  while (true) {
     const head = await client.getBlockNumber();
     if (head >= minBlock) return head;
     lastSeen = head;
-    if (i < attempts - 1) await sleep(baseDelay * 2 ** i);
+
+    const elapsed = Date.now() - start;
+    if (elapsed + intervalMs >= timeoutMs) {
+      throw new Error(
+        `Chain head has not reached block ${minBlock} within ${timeoutMs}ms. ` +
+          `Last observed head: ${lastSeen}. ` +
+          `This usually indicates a slow or stuck RPC endpoint.`,
+      );
+    }
+    await sleep(intervalMs);
   }
-  throw new Error(
-    `Chain head has not reached block ${minBlock} after ${attempts} attempts. ` +
-      `Last observed head: ${lastSeen}. ` +
-      `This usually indicates RPC latency or a stuck node.`,
-  );
 }
