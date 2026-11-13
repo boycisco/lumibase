@@ -1,9 +1,18 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
     "rootDir": ".",
     "outDir": "./dist"
   },
   "include": ["client.ts", "index.ts", "schema/**/*.ts"],
-  "exclude": ["node_modules", "dist", "tests", "migrations", "seeds", "drizzle.config.ts"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests",
+    "migrations",
+    "seeds",
+    "drizzle.config.ts"
+  ]
 }

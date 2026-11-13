@@ -11,17 +11,13 @@
  * migration without data loss.
  */
 
-import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
-export const applications = pgTable("applications", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name").notNull(),
-  keyHash: text("key_hash").notNull(),
-  status: text("status").notNull().default("active"),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
+export const applications = pgTable('applications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  keyHash: text('key_hash').notNull(),
+  status: text('status').notNull().default('active'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });

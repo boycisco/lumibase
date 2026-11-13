@@ -1,3 +1,3 @@
-export { createClient } from "./client.js";
-export type { Database } from "./client.js";
-export * from "./schema/index.js";
+export { createClient } from "./client.ts";
+export type { Database } from "./client.ts";
+export * from "./schema/index.ts";
