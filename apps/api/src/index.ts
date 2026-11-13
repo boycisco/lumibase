@@ -10,6 +10,7 @@ export { loadApiConfig } from './config.ts';
 export type { ApiConfig } from './config.ts';
 export { setErrorHandler } from './error.ts';
 export { registerHealth } from './health.ts';
+export { registerOpenApi } from './openapi.ts';
 export { registerPayments } from './payments.ts';
 export { registerRoutes } from './routes.ts';
 

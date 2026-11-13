@@ -1,20 +1,25 @@
 /**
  * Fastify error and not-found handlers.
  *
- * Two responsibilities:
+ * Three cases, in priority order:
  *
- *   1. Convert every LumiError into the wire format defined in
- *      specs/payments/errors.json:
- *        { error: { code, message, requestId } }
- *      The status code comes from the LumiError itself, which came from
- *      the spec-mapped paymentError() factory (or a core factory for
- *      cross-cutting codes).
+ *   1. LumiError — our own structured error. Serialized via toBody(),
+ *      status from the error itself.
  *
- *   2. Convert everything else into a generic 500 with no details. The
- *      full error (including stack) is logged with the request ID, so
- *      operators can correlate a client-visible requestId to a log line.
- *      Stack traces NEVER go to clients — spec section 15: "Do not
- *      expose stack traces in production responses."
+ *   2. Plugin-thrown 4xx errors — Fastify plugins (rate-limit in
+ *      particular) throw errors with a numeric `statusCode` in the 4xx
+ *      range. We honor that status. Without this, a rate-limited request
+ *      would surface as 500 instead of 429, telling the client to keep
+ *      retrying. This is a real bug in any error handler that only
+ *      recognizes its own error types.
+ *
+ *   3. Everything else — generic 500 with no details. Full error is
+ *      logged with the request ID for correlation. Stack traces NEVER
+ *      go to clients.
+ *
+ * `err` is typed `unknown` by Fastify (so plugins can throw anything),
+ * so every access is guarded: `instanceof Error` for `.message`,
+ * `typeof` for `.code`/`.statusCode`.
  */
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
@@ -25,6 +30,25 @@ export function setErrorHandler(app: FastifyInstance): void {
     if (isLumiError(err)) {
       return reply.status(err.statusCode).send({ error: err.toBody(request.id) });
     }
+
+    const errRecord = err as {
+      statusCode?: unknown;
+      code?: unknown;
+      message?: unknown;
+    };
+    const maybeStatus = errRecord.statusCode;
+    if (typeof maybeStatus === 'number' && maybeStatus >= 400 && maybeStatus < 500) {
+      const maybeCode = errRecord.code;
+      const maybeMessage = errRecord.message;
+      return reply.status(maybeStatus).send({
+        error: {
+          code: typeof maybeCode === 'string' ? maybeCode : 'ERROR',
+          message: typeof maybeMessage === 'string' ? maybeMessage : 'Request rejected.',
+          requestId: request.id,
+        },
+      });
+    }
+
     request.log.error({ err, requestId: request.id }, 'unhandled_error');
     return reply.status(500).send({
       error: {

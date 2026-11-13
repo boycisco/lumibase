@@ -24,6 +24,9 @@
   },
   "dependencies": {
     "@fastify/helmet": "catalog:",
+    "@fastify/rate-limit": "catalog:",
+    "@fastify/swagger": "catalog:",
+    "@fastify/swagger-ui": "catalog:",
     "@lumibase/core": "workspace:*",
     "@lumibase/database": "workspace:*",
     "@lumibase/network": "workspace:*",
@@ -37,6 +40,7 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "eslint": "catalog:",
+    "openapi-types": "catalog:",
     "pino-pretty": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
