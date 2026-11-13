@@ -1,0 +1,39 @@
+{
+  "description": "Ground-truth expectations for the two chains defined in specs/network/chains.json. The conformance test asserts that the spec file matches these expectations. If the spec changes, this file must change with it.",
+  "chains": [
+    {
+      "id": 84532,
+      "name": "Base Sepolia",
+      "testnet": true,
+      "enabled": true,
+      "nativeSymbol": "ETH",
+      "nativeDecimals": 18,
+      "confirmationBlocks": 12,
+      "tokens": [
+        {
+          "address": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+          "symbol": "USDC",
+          "decimals": 6,
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": 8453,
+      "name": "Base Mainnet",
+      "testnet": false,
+      "enabled": false,
+      "nativeSymbol": "ETH",
+      "nativeDecimals": 18,
+      "confirmationBlocks": 12,
+      "tokens": [
+        {
+          "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "symbol": "USDC",
+          "decimals": 6,
+          "enabled": false
+        }
+      ]
+    }
+  ]
+}

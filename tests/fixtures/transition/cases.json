@@ -1,0 +1,22 @@
+{
+  "description": "Ground-truth lifecycle transitions for LumiBase v0.1. Any pair (from, to) NOT listed in `allowed` is forbidden. Enumerating only the allowed pairs keeps this file small while still being exhaustive: every one of the 8x8 = 64 ordered pairs is either explicitly allowed or implicitly forbidden.",
+  "statuses": [
+    "pending",
+    "processing",
+    "confirmed",
+    "expired",
+    "failed",
+    "cancelled",
+    "underpaid",
+    "overpaid"
+  ],
+  "allowed": [
+    ["pending", "processing"],
+    ["pending", "expired"],
+    ["pending", "cancelled"],
+    ["processing", "pending"],
+    ["processing", "confirmed"],
+    ["processing", "underpaid"],
+    ["processing", "overpaid"]
+  ]
+}

@@ -1,0 +1,553 @@
+[
+  {
+    "name": "missing-id",
+    "payment": {
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "missing-application-id",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "missing-chain-id",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "missing-token",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "missing-amount",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "missing-recipient",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "missing-status",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "missing-expires-at",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "missing-created-at",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "missing-updated-at",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "amount-zero-string",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "0",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "amount-leading-zero",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "01",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "amount-negative-string",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "-1",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "amount-decimal-string",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1.5",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "amount-empty-string",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "amount-as-number",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": 1500000,
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "chain-id-zero",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 0,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "chain-id-negative",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": -1,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "chain-id-float",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 1.5,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "chain-id-as-string",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": "84532",
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "token-not-hex",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "not-an-address",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "token-wrong-length",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x123",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "token-uppercase-0x",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0X036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "recipient-not-hex",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "not-an-address",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "recipient-wrong-length",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x123",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "bad-uuid-id",
+    "payment": {
+      "id": "not-a-uuid",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "bad-uuid-application-id",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "not-a-uuid",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "bad-status",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "completed",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "bad-expires-at",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "not-a-date",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "bad-created-at",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "not-a-date",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "payer-wrong-type",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "payer": 123,
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "payer-wrong-address",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "payer": "0x123",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "reference-wrong-type",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "reference": 42,
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "reference-too-long",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "reference": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  },
+  {
+    "name": "metadata-wrong-type",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z",
+      "metadata": "not-an-object"
+    }
+  },
+  {
+    "name": "extra-field",
+    "payment": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z",
+      "unexpectedField": "value"
+    }
+  },
+  {
+    "name": "id-wrong-type",
+    "payment": {
+      "id": 42,
+      "applicationId": "660e8400-e29b-41d4-a716-446655440000",
+      "chainId": 84532,
+      "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "amount": "1500000",
+      "recipient": "0x0000000000000000000000000000000000000001",
+      "status": "pending",
+      "expiresAt": "2025-11-13T20:00:00Z",
+      "createdAt": "2025-11-13T19:30:00Z",
+      "updatedAt": "2025-11-13T19:30:00Z"
+    }
+  }
+]
