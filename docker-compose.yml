@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lumibase-postgres
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: lumibase
+      POSTGRES_PASSWORD: lumibase_dev_password
+      POSTGRES_DB: lumibase_dev
+    volumes:
+      - lumibase_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lumibase -d lumibase_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  lumibase_pgdata:
