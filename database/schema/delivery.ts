@@ -2,16 +2,20 @@
  * Deliveries table.
  *
  * Per-event-per-webhook delivery queue (specs section 14). The unique
- * constraint on (webhook_id, event_id) guarantees that no event can produce
- * two delivery rows for the same webhook — that is the mechanism that
- * prevents duplicate deliveries even under retry and worker crash scenarios.
+ * constraint on (webhook_id, event_id) prevents duplicate deliveries.
  *
- * Workers pop deliveries by selecting where status = 'pending' and
- * nextAttemptAt <= now(), then atomically transition to 'delivering'. The
- * full worker is implemented in Phase 9.
+ * Status lifecycle:
+ *   pending     — awaiting first attempt or a scheduled retry
+ *   processing  — claimed by a worker; HTTP in flight (or crashed)
+ *   delivered   — 2xx response received (terminal)
+ *   failed      — permanent failure, retries exhausted or 4xx/3xx (terminal)
  *
- * ON DELETE CASCADE: if a webhook is deleted, its pending deliveries are
- * deleted with it. Event history remains in the events table.
+ * lease_expires_at:
+ *   Set to now + 60s when a worker claims the row. Cleared on outcome.
+ *   If a worker crashes mid-delivery, the row stays 'processing' with a
+ *   lease in the past; the next claim cycle reaps it. This avoids the
+ *   "stuck in processing forever" failure mode without a separate reaper
+ *   process.
  */
 
 import { index, integer, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
@@ -31,6 +35,7 @@ export const deliveries = pgTable(
     status: text('status').notNull().default('pending'),
     attempts: integer('attempts').notNull().default(0),
     nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }).notNull().defaultNow(),
+    leaseExpiresAt: timestamp('lease_expires_at', { withTimezone: true }),
     lastStatusCode: integer('last_status_code'),
     lastError: text('last_error'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

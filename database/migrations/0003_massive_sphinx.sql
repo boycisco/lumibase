@@ -1,0 +1,1 @@
+ALTER TABLE "deliveries" ADD COLUMN "lease_expires_at" timestamp with time zone;
