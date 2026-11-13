@@ -5,10 +5,27 @@
  *
  * Language-independent specifications live in the repository's `specs/`
  * directory. This package is the TypeScript reference implementation.
- *
- * Current contents: package version only.
- * Phase 2 will add: errors, amount math, address validation, chain config,
- * and configuration validation.
  */
+
+export {
+  MAX_UINT256,
+  deserializeAmount,
+  formatUnits,
+  parseUnits,
+  serializeAmount,
+} from './amount.js';
+
+export {
+  HTTP_STATUS,
+  LumiError,
+  conflictError,
+  internalError,
+  isLumiError,
+  notFoundError,
+  unauthorizedError,
+  validationError,
+} from './error.js';
+
+export type { CoreErrorCode, ErrorBody, ErrorOptions } from './error.js';
 
 export const VERSION = '0.1.0';
