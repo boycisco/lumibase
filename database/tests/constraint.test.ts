@@ -128,7 +128,7 @@ describe('deliveries UNIQUE(webhook_id, event_id) - idempotency guard', () => {
       .values({
         applicationId: appId,
         endpoint: 'https://example.com/hook',
-        secretHash: 'hash-of-secret',
+        secretCiphertext: 'hash-of-secret',
       })
       .returning({ id: webhooks.id });
     if (!hook) throw new Error('Failed to insert webhook');
@@ -181,7 +181,7 @@ describe('ON DELETE behaviors', () => {
       .values({
         applicationId: appId,
         endpoint: 'https://example.com/hook',
-        secretHash: 'hash',
+        secretCiphertext: 'hash',
       })
       .returning({ id: webhooks.id });
     if (!hook) throw new Error('Failed to insert webhook');

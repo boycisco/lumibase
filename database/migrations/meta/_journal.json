@@ -15,6 +15,13 @@
       "when": 1794598894412,
       "tag": "0001_fluffy_captain_universe",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794610121165,
+      "tag": "0002_wise_oracle",
+      "breakpoints": true
     }
   ]
 }

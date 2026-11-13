@@ -1,8 +1,5 @@
 /**
  * Route registry.
- *
- * All routes are registered here so `app.ts` stays focused on app-level
- * concerns (logger, error handler, middleware, plugins).
  */
 
 import type { FastifyInstance } from 'fastify';
@@ -13,6 +10,7 @@ import { registerApplication } from './application.ts';
 import type { ApiConfig } from './config.ts';
 import { registerHealth } from './health.ts';
 import { registerPayments } from './payments.ts';
+import { registerWebhooks } from './webhook.ts';
 
 export function registerRoutes(
   app: FastifyInstance,
@@ -24,4 +22,5 @@ export function registerRoutes(
   registerHealth(app, db);
   registerApplication(app, db, config);
   registerPayments(app, payments, db);
+  registerWebhooks(app, db, config);
 }

@@ -21,7 +21,7 @@ import { createClient, type Client, type Database } from '@lumibase/database';
 const here = dirname(fileURLToPath(import.meta.url));
 loadDotenv({ path: resolve(here, '../../../.env') });
 
-// Deterministic test env. Secret padded to satisfy the secret(32) validator.
+// Deterministic test env. Secrets padded to satisfy secret(32) validator.
 process.env.NODE_ENV = 'test';
 process.env.PORT = '9999';
 process.env.LOG_LEVEL = 'fatal';
@@ -29,6 +29,7 @@ process.env.API_SECRET =
   process.env.API_SECRET && process.env.API_SECRET.length >= 32
     ? process.env.API_SECRET
     : 'test_admin_secret_'.padEnd(64, 'x');
+process.env.WEBHOOK_SECRET = 'test_webhook_master_secret_'.padEnd(64, 'y');
 
 const url = process.env.DATABASE_URL;
 if (!url) {
