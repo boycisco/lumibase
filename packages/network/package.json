@@ -15,7 +15,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint": "eslint ."
@@ -27,6 +27,7 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "eslint": "catalog:",
+    "solc": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }
