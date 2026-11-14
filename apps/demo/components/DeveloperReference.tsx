@@ -1,18 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  CheckCircle2,
-  ExternalLink,
-  KeyRound,
-  Lock,
-  ShieldAlert,
-  Webhook,
-} from 'lucide-react';
-import {
-  PAYMENT_LIFECYCLE_SPECS,
-  VERIFICATION_OUTCOME_SPECS,
-} from '@/lib/lumibase/constants';
+import { CheckCircle2, ExternalLink, KeyRound, Lock, ShieldAlert, Webhook } from 'lucide-react';
+import { PAYMENT_LIFECYCLE_SPECS, VERIFICATION_OUTCOME_SPECS } from '@/lib/lumibase/constants';
 
 const SAMPLE_WEBHOOK_BODY = JSON.stringify(
   {
@@ -43,10 +33,7 @@ function hexFromBuffer(buffer: ArrayBuffer): string {
     .join('');
 }
 
-async function computeHmacSha256Hex(
-  secret: string,
-  payload: string,
-): Promise<string> {
+async function computeHmacSha256Hex(secret: string, payload: string): Promise<string> {
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
     'raw',
@@ -69,13 +56,9 @@ function constantTimeHexEqual(a: string, b: string): boolean {
 }
 
 export function DeveloperReference() {
-  const [signingSecret, setSigningSecret] = useState(
-    'whsec_demo_local_verifier_example',
-  );
+  const [signingSecret, setSigningSecret] = useState('whsec_demo_local_verifier_example');
   const [rawBody, setRawBody] = useState(SAMPLE_WEBHOOK_BODY);
-  const [timestampInput, setTimestampInput] = useState(() =>
-    String(Math.floor(Date.now() / 1000)),
-  );
+  const [timestampInput, setTimestampInput] = useState(() => String(Math.floor(Date.now() / 1000)));
   const [signatureHex, setSignatureHex] = useState('');
   const [verifyResult, setVerifyResult] = useState<{
     validSignature: boolean;
@@ -87,10 +70,7 @@ export function DeveloperReference() {
   const handleSignSample = async () => {
     const nowUnix = String(Math.floor(Date.now() / 1000));
     setTimestampInput(nowUnix);
-    const hex = await computeHmacSha256Hex(
-      signingSecret,
-      `${nowUnix}.${rawBody}`,
-    );
+    const hex = await computeHmacSha256Hex(signingSecret, `${nowUnix}.${rawBody}`);
     setSignatureHex(hex);
     setVerifyResult({
       validSignature: true,
@@ -101,10 +81,7 @@ export function DeveloperReference() {
   };
 
   const handleVerifySample = async () => {
-    const expectedHex = await computeHmacSha256Hex(
-      signingSecret,
-      `${timestampInput}.${rawBody}`,
-    );
+    const expectedHex = await computeHmacSha256Hex(signingSecret, `${timestampInput}.${rawBody}`);
     const normalizedInput = signatureHex.trim().toLowerCase();
     const validSignature = constantTimeHexEqual(normalizedInput, expectedHex);
     const parsedTs = Number(timestampInput);
@@ -131,13 +108,9 @@ export function DeveloperReference() {
             01. Authoritative Payment Lifecycle and Verification Matrix
           </h2>
           <p className="text-sm leading-relaxed text-slate-600">
-            LumiBase exposes a strict finite state machine. Confirmation
-            requests may return HTTP 200 with a non-null verification outcome in
-            the body, so clients always inspect{' '}
-            <code className="font-mono text-xs text-slate-800">
-              payment.status
-            </code>{' '}
-            before{' '}
+            LumiBase exposes a strict finite state machine. Confirmation requests may return HTTP
+            200 with a non-null verification outcome in the body, so clients always inspect{' '}
+            <code className="font-mono text-xs text-slate-800">payment.status</code> before{' '}
             <code className="font-mono text-xs text-slate-800">error</code>.
           </p>
         </div>
@@ -160,9 +133,7 @@ export function DeveloperReference() {
                   <td className="px-4 py-2.5 text-xs font-medium text-slate-700 whitespace-nowrap">
                     {item.terminal ? 'Yes (Stop polling)' : 'No (Poll status)'}
                   </td>
-                  <td className="px-4 py-2.5 text-slate-600">
-                    {item.meaning}
-                  </td>
+                  <td className="px-4 py-2.5 text-slate-600">{item.meaning}</td>
                 </tr>
               ))}
             </tbody>
@@ -186,21 +157,15 @@ export function DeveloperReference() {
                   </td>
                   <td className="px-4 py-3 text-xs font-medium whitespace-nowrap">
                     {row.action === 'retry_same_hash' ? (
-                      <span className="text-emerald-700">
-                        Yes — safe to retry
-                      </span>
+                      <span className="text-emerald-700">Yes — safe to retry</span>
                     ) : row.action === 'poll_status' ? (
-                      <span className="text-blue-700">
-                        Poll status endpoint
-                      </span>
+                      <span className="text-blue-700">Poll status endpoint</span>
                     ) : (
                       <span className="text-red-700">No — do not retry</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-slate-600">
-                    <span className="font-medium text-slate-900">
-                      {row.meaning}.
-                    </span>{' '}
+                    <span className="font-medium text-slate-900">{row.meaning}.</span>{' '}
                     {row.guidance}
                   </td>
                 </tr>
@@ -220,16 +185,13 @@ export function DeveloperReference() {
             02. Outbound Webhook Signature Verifier &amp; SSRF Policy
           </h2>
           <p className="text-sm leading-relaxed text-slate-600">
-            LumiBase&apos;s background worker enforces SSRF protection and
-            rejects loopback or private-network destinations, so a receiver at{' '}
-            <code className="font-mono text-xs text-slate-800">localhost</code>{' '}
-            cannot receive live worker deliveries. A live webhook delivery test
-            requires a public HTTPS endpoint or tunnel. Use this local Web
-            Crypto utility to inspect how receivers verify{' '}
-            <code className="font-mono text-xs text-slate-800">
-              X-LumiBase-Signature
-            </code>{' '}
-            without altering SSRF rules.
+            LumiBase&apos;s background worker enforces SSRF protection and rejects loopback or
+            private-network destinations, so a receiver at{' '}
+            <code className="font-mono text-xs text-slate-800">localhost</code> cannot receive live
+            worker deliveries. A live webhook delivery test requires a public HTTPS endpoint or
+            tunnel. Use this local Web Crypto utility to inspect how receivers verify{' '}
+            <code className="font-mono text-xs text-slate-800">X-LumiBase-Signature</code> without
+            altering SSRF rules.
           </p>
         </div>
 
@@ -297,8 +259,7 @@ export function DeveloperReference() {
               {verifyResult && (
                 <div
                   className={`rounded-lg border p-3 text-xs space-y-1 ${
-                    verifyResult.validSignature &&
-                    verifyResult.withinReplayWindow
+                    verifyResult.validSignature && verifyResult.withinReplayWindow
                       ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
                       : 'border-red-200 bg-red-50 text-red-900'
                   }`}
@@ -348,8 +309,8 @@ export function DeveloperReference() {
           </h2>
           <p className="text-sm leading-relaxed text-slate-600">
             All browser traffic goes exclusively through same-origin{' '}
-            <code className="font-mono text-xs text-slate-800">/demo/*</code>{' '}
-            endpoints. LumiBase credentials never enter the client bundle.
+            <code className="font-mono text-xs text-slate-800">/demo/*</code> endpoints. LumiBase
+            credentials never enter the client bundle.
           </p>
         </div>
 
@@ -363,32 +324,34 @@ export function DeveloperReference() {
               <li className="flex items-start gap-2">
                 <KeyRound className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
                 <span>
-                  <code className="font-mono text-xs text-slate-800">
-                    API_SECRET
-                  </code>{' '}
-                  is read only on server bootstrap to call{' '}
+                  <code className="font-mono text-xs text-slate-800">API_SECRET</code> is read only
+                  on server bootstrap to call{' '}
                   <code className="font-mono text-xs text-slate-800">
                     POST /api/v1/applications
                   </code>{' '}
-                  with <code className="font-mono text-xs text-slate-800">Authorization: Admin</code>.
+                  with{' '}
+                  <code className="font-mono text-xs text-slate-800">Authorization: Admin</code>.
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
+                <ShieldAlert
+                  className="mt-0.5 h-4 w-4 shrink-0 text-slate-500"
+                  aria-hidden="true"
+                />
                 <span>
-                  The one-time application API key lives strictly in server
-                  process memory and is never logged, written to disk, or
-                  returned to the browser.
+                  The one-time application API key lives strictly in server process memory and is
+                  never logged, written to disk, or returned to the browser.
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <ExternalLink className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
+                <ExternalLink
+                  className="mt-0.5 h-4 w-4 shrink-0 text-slate-500"
+                  aria-hidden="true"
+                />
                 <span>
-                  Recipient address, chain ID (<span className="font-mono">84532</span>), and
-                  USDC token contract are enforced server-side from{' '}
-                  <code className="font-mono text-xs text-slate-800">
-                    DEMO_RECIPIENT
-                  </code>.
+                  Recipient address, chain ID (<span className="font-mono">84532</span>), and USDC
+                  token contract are enforced server-side from{' '}
+                  <code className="font-mono text-xs text-slate-800">DEMO_RECIPIENT</code>.
                 </span>
               </li>
             </ul>
@@ -401,20 +364,20 @@ export function DeveloperReference() {
             <ul className="space-y-2 text-sm text-slate-600 list-disc pl-5">
               <li>Base Sepolia only (Base Mainnet 8453 is disabled).</li>
               <li>
-                No direct browser-to-LumiBase CORS access; all requests proxy
-                through the same-origin BFF.
+                No direct browser-to-LumiBase CORS access; all requests proxy through the
+                same-origin BFF.
               </li>
               <li>
-                Underpaid and overpaid are terminal states in v0.1 with no
-                automatic top-up or refund flow.
+                Underpaid and overpaid are terminal states in v0.1 with no automatic top-up or
+                refund flow.
               </li>
               <li>
-                Restarting the demo server provisions a new in-memory
-                application key, orphaning prior in-flight demo payments.
+                Restarting the demo server provisions a new in-memory application key, orphaning
+                prior in-flight demo payments.
               </li>
               <li>
-                <code className="font-mono text-xs text-slate-800">failed</code>{' '}
-                status is reserved for future use and not emitted in v0.1.
+                <code className="font-mono text-xs text-slate-800">failed</code> status is reserved
+                for future use and not emitted in v0.1.
               </li>
             </ul>
           </div>

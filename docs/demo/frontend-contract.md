@@ -194,14 +194,14 @@ Webhook delivery is an optional advanced demonstration. It must not block the pr
 
 The v0.1 demo must use Base Sepolia only.
 
-| Field | Value |
-|---|---|
-| Network | Base Sepolia |
-| Chain ID | `84532` |
-| Native gas token | ETH |
-| USDC contract | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` |
-| USDC decimals | `6` |
-| Block explorer | `https://sepolia.basescan.org` |
+| Field            | Value                                        |
+| ---------------- | -------------------------------------------- |
+| Network          | Base Sepolia                                 |
+| Chain ID         | `84532`                                      |
+| Native gas token | ETH                                          |
+| USDC contract    | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` |
+| USDC decimals    | `6`                                          |
+| Block explorer   | `https://sepolia.basescan.org`               |
 
 Base Mainnet (chain ID `8453`) is disabled in the current network specification. Do not attempt to create or pay LumiBase v0.1 payments on Base Mainnet.
 
@@ -216,14 +216,14 @@ The browser needs the USDC `transfer(address,uint256)` function.
 ```ts
 const USDC_ABI = [
   {
-    type: "function",
-    name: "transfer",
-    stateMutability: "nonpayable",
+    type: 'function',
+    name: 'transfer',
+    stateMutability: 'nonpayable',
     inputs: [
-      { name: "to", type: "address" },
-      { name: "value", type: "uint256" },
+      { name: 'to', type: 'address' },
+      { name: 'value', type: 'uint256' },
     ],
-    outputs: [{ type: "bool" }],
+    outputs: [{ type: 'bool' }],
   },
 ] as const;
 ```
@@ -250,7 +250,7 @@ The browser submits an ERC-20 transfer using the connected wallet. Conceptually:
 const hash = await walletClient.writeContract({
   address: usdcAddress,
   abi: USDC_ABI,
-  functionName: "transfer",
+  functionName: 'transfer',
   args: [payment.recipient, BigInt(payment.amount)],
 });
 ```
@@ -393,6 +393,7 @@ The demo server calls the existing LumiBase API. It must use the live OpenAPI do
 `POST /api/v1/applications`
 
 **Authentication header:**
+
 ```
 Authorization: Admin <LUMIBASE_API_SECRET>
 ```
@@ -402,11 +403,13 @@ environment variable on the LumiBase server. The prefix is the literal word
 `Admin` followed by a single space.
 
 **Request body:**
+
 ```json
 { "name": "demo-<timestamp>" }
 ```
 
 **Response (201):**
+
 ```json
 {
   "application": {
@@ -426,11 +429,13 @@ The `key` is returned exactly once. Store it in process memory only.
 `POST /api/v1/payments`
 
 **Authentication header:**
+
 ```
 Authorization: Bearer <LUMIBASE_API_KEY>
 ```
 
 **Request body (accepted fields):**
+
 ```json
 {
   "amount": "1500000",
@@ -444,16 +449,16 @@ Authorization: Bearer <LUMIBASE_API_KEY>
 }
 ```
 
-| Field | Type | Required | Constraints |
-|---|---|---|---|
-| `amount` | string | Yes | Base-unit integer string, regex `^[1-9][0-9]*$`; > 0; ≤ uint256 max |
-| `chainId` | integer | Yes | `84532` (Base Sepolia). Base Mainnet `8453` is disabled. |
-| `token` | string | Yes | Must be a token registered for `chainId`. Base Sepolia USDC: `0x036CbD53842c5426634e7929541eC2318f3dCF7e` |
-| `recipient` | string | Yes | EVM address, EIP-55 valid |
-| `payer` | string\|null | No | If set, only that sender may confirm |
-| `reference` | string\|null | No | ≤ 256 characters; not unique |
-| `expiresIn` | integer | Yes | Positive integer seconds; ≤ `2592000` (30 days) |
-| `metadata` | object\|null | No | Serialized size ≤ 8 KiB |
+| Field       | Type         | Required | Constraints                                                                                               |
+| ----------- | ------------ | -------- | --------------------------------------------------------------------------------------------------------- |
+| `amount`    | string       | Yes      | Base-unit integer string, regex `^[1-9][0-9]*$`; > 0; ≤ uint256 max                                       |
+| `chainId`   | integer      | Yes      | `84532` (Base Sepolia). Base Mainnet `8453` is disabled.                                                  |
+| `token`     | string       | Yes      | Must be a token registered for `chainId`. Base Sepolia USDC: `0x036CbD53842c5426634e7929541eC2318f3dCF7e` |
+| `recipient` | string       | Yes      | EVM address, EIP-55 valid                                                                                 |
+| `payer`     | string\|null | No       | If set, only that sender may confirm                                                                      |
+| `reference` | string\|null | No       | ≤ 256 characters; not unique                                                                              |
+| `expiresIn` | integer      | Yes      | Positive integer seconds; ≤ `2592000` (30 days)                                                           |
+| `metadata`  | object\|null | No       | Serialized size ≤ 8 KiB                                                                                   |
 
 **Response (201):** The wire payment object (see §6.2 for the shape).
 
@@ -488,16 +493,16 @@ Do not implement webhook registration in the browser-facing BFF unless the demo 
 
 The current payment lifecycle defines these statuses:
 
-| Status | Meaning | Terminal |
-|---|---|---:|
-| `pending` | Awaiting a valid payment | No |
-| `processing` | Verification is in progress | No |
-| `confirmed` | Exact payment independently verified | Yes |
-| `underpaid` | Matching transfer found, amount too low | Yes |
-| `overpaid` | Matching transfer found, amount too high | Yes |
-| `expired` | Payment request expired | Yes |
-| `cancelled` | Payment request cancelled | Yes |
-| `failed` | Reserved for a future version; not emitted by the v0.1 confirmation flow | Future use |
+| Status       | Meaning                                                                  |   Terminal |
+| ------------ | ------------------------------------------------------------------------ | ---------: |
+| `pending`    | Awaiting a valid payment                                                 |         No |
+| `processing` | Verification is in progress                                              |         No |
+| `confirmed`  | Exact payment independently verified                                     |        Yes |
+| `underpaid`  | Matching transfer found, amount too low                                  |        Yes |
+| `overpaid`   | Matching transfer found, amount too high                                 |        Yes |
+| `expired`    | Payment request expired                                                  |        Yes |
+| `cancelled`  | Payment request cancelled                                                |        Yes |
+| `failed`     | Reserved for a future version; not emitted by the v0.1 confirmation flow | Future use |
 
 Use `specs/payments/lifecycle.json` as the authoritative state-machine definition. Do not invent statuses or transitions.
 
@@ -597,17 +602,17 @@ The frontend should use the error code for behavior and the message for useful f
 
 The following table is a handling guide, not a substitute for the actual error specification:
 
-| HTTP status | Typical meaning | Frontend behavior |
-|---:|---|---|
-| 400 | Invalid request | Explain the input problem; do not blindly retry |
-| 401 | Invalid or missing server credential | Show a demo-configuration error; operator must fix it |
-| 403 | Operation not permitted | Explain that the action is unavailable |
-| 404 | Payment or route not found | Explain that the payment could not be found |
-| 409 | Payment state conflict (expired, already terminal, verification in progress) | Display the specific conflict; do not retry blindly |
-| 422 | Unsupported chain/token or invalid endpoint | Explain the configuration or validation problem |
-| 429 | Rate limit reached | Respect `Retry-After` if provided |
-| 500 | Unexpected server error | Show a generic error and request ID |
-| 503 | Service/configuration unavailable | Show a temporary or operator-configuration error |
+| HTTP status | Typical meaning                                                              | Frontend behavior                                     |
+| ----------: | ---------------------------------------------------------------------------- | ----------------------------------------------------- |
+|         400 | Invalid request                                                              | Explain the input problem; do not blindly retry       |
+|         401 | Invalid or missing server credential                                         | Show a demo-configuration error; operator must fix it |
+|         403 | Operation not permitted                                                      | Explain that the action is unavailable                |
+|         404 | Payment or route not found                                                   | Explain that the payment could not be found           |
+|         409 | Payment state conflict (expired, already terminal, verification in progress) | Display the specific conflict; do not retry blindly   |
+|         422 | Unsupported chain/token or invalid endpoint                                  | Explain the configuration or validation problem       |
+|         429 | Rate limit reached                                                           | Respect `Retry-After` if provided                     |
+|         500 | Unexpected server error                                                      | Show a generic error and request ID                   |
+|         503 | Service/configuration unavailable                                            | Show a temporary or operator-configuration error      |
 
 The exact codes and HTTP mappings must be verified against `specs/payments/errors.json` and the API implementation before the frontend hardcodes them.
 
@@ -622,19 +627,19 @@ response, which uses the structured error envelope in §9.1 with
 The following table lists every code the v0.1 confirm flow can emit. All
 codes are defined in `specs/payments/errors.json`.
 
-| `error` | Meaning | Safe to retry same hash? | Frontend guidance |
-|---|---|---:|---|
-| `TRANSACTION_NOT_FOUND` | Hash not yet known on Base Sepolia | Yes | Retry in a few seconds; tx may not be mined yet |
-| `TRANSACTION_REVERTED` | Mined but reverted | No | Tx failed on-chain; do not retry |
-| `TRANSACTION_WRONG_RECIPIENT` | Transfer went to a different address | No | Wrong recipient; do not retry |
-| `TRANSACTION_WRONG_TOKEN` | Transfer used a different token | No | Wrong token; do not retry |
-| `TRANSACTION_WRONG_SENDER` | Transfer from wrong sender (payer specified) | No | Wrong wallet; do not retry |
-| `TRANSACTION_NOT_ENOUGH_CONFIRMATIONS` | Mined, fewer than policy blocks | Yes | Retry in ~30 seconds |
-| `TRANSACTION_ALREADY_PROCESSED` | Hash already associated with another payment | No | Do not retry |
-| `TRANSACTION_RPC_FAILURE` | RPC temporarily unreachable | Yes | Retry in a few seconds |
-| `PAYMENT_VERIFICATION_IN_PROGRESS` | Another confirm call is running | Poll status, don't re-submit | Wait and poll `GET /demo/payments/:id/status` |
-| `PAYMENT_EXPIRED` | Payment expired before this confirm | No | Terminal; create a new payment |
-| `PAYMENT_INVALID_STATE` | Unexpected state (should not occur) | No | Report as internal error |
+| `error`                                | Meaning                                      |     Safe to retry same hash? | Frontend guidance                               |
+| -------------------------------------- | -------------------------------------------- | ---------------------------: | ----------------------------------------------- |
+| `TRANSACTION_NOT_FOUND`                | Hash not yet known on Base Sepolia           |                          Yes | Retry in a few seconds; tx may not be mined yet |
+| `TRANSACTION_REVERTED`                 | Mined but reverted                           |                           No | Tx failed on-chain; do not retry                |
+| `TRANSACTION_WRONG_RECIPIENT`          | Transfer went to a different address         |                           No | Wrong recipient; do not retry                   |
+| `TRANSACTION_WRONG_TOKEN`              | Transfer used a different token              |                           No | Wrong token; do not retry                       |
+| `TRANSACTION_WRONG_SENDER`             | Transfer from wrong sender (payer specified) |                           No | Wrong wallet; do not retry                      |
+| `TRANSACTION_NOT_ENOUGH_CONFIRMATIONS` | Mined, fewer than policy blocks              |                          Yes | Retry in ~30 seconds                            |
+| `TRANSACTION_ALREADY_PROCESSED`        | Hash already associated with another payment |                           No | Do not retry                                    |
+| `TRANSACTION_RPC_FAILURE`              | RPC temporarily unreachable                  |                          Yes | Retry in a few seconds                          |
+| `PAYMENT_VERIFICATION_IN_PROGRESS`     | Another confirm call is running              | Poll status, don't re-submit | Wait and poll `GET /demo/payments/:id/status`   |
+| `PAYMENT_EXPIRED`                      | Payment expired before this confirm          |                           No | Terminal; create a new payment                  |
+| `PAYMENT_INVALID_STATE`                | Unexpected state (should not occur)          |                           No | Report as internal error                        |
 
 **Not emitted in v0.1** despite being declared in `specs/payments/errors.json`:
 
@@ -684,6 +689,7 @@ using the webhook's plaintext signing secret as the key. The signature is
 lowercase hex, 64 characters.
 
 Receiver verification:
+
 1. Parse `t` and `v1` from the header.
 2. Compute `HMAC-SHA256(secret, "<t>.<body>")`.
 3. Compare the hex output to `v1` in constant time.
@@ -702,7 +708,7 @@ The webhook body is the event JSON envelope:
   "type": "payment.confirmed",
   "createdAt": "2026-11-14T12:35:12.345Z",
   "data": {
-    "payment": { /* wire payment */ },
+    "payment": {/* wire payment */},
     "transaction": { "hash": "0x...", "blockNumber": "12345678" }
   }
 }
@@ -729,8 +735,8 @@ The following limitations must be communicated honestly:
    - `GET /demo/payments/:id` returns 404 (payment belongs to the old app)
    - `POST /demo/payments/:id/confirm` returns 404
    - Any in-flight payment is lost to the demo view
-   This is a demo limitation, not a LumiBase protocol rule. A production
-   deployment would persist application credentials securely.
+     This is a demo limitation, not a LumiBase protocol rule. A production
+     deployment would persist application credentials securely.
 6. **Webhook signing secrets are returned once.** They must be retained securely by the server if the demo needs to use them later.
 
 These are integration constraints, not permission to weaken backend security.
@@ -744,13 +750,13 @@ These are integration constraints, not permission to weaken backend security.
 The demo server reads these variables at startup, from the same root `.env`
 file the API and worker use.
 
-| Variable | Required | Default | Purpose |
-|---|---:|---|---|
-| `LUMIBASE_API_URL` | Yes | — | Base URL of the running LumiBase API (e.g., `http://localhost:3000`) |
-| `API_SECRET` | Yes | — | Admin secret. Same variable the LumiBase API uses. Read once at startup; used only for the admin bootstrap call |
-| `DEMO_RECIPIENT` | Yes | — | EVM address (checksummed or lowercase) that receives payments. Never sourced from the browser |
-| `DEMO_PORT` | No | `4000` | HTTP port the demo server listens on |
-| `NODE_ENV` | No | `development` | Runtime environment |
+| Variable           | Required | Default       | Purpose                                                                                                         |
+| ------------------ | -------: | ------------- | --------------------------------------------------------------------------------------------------------------- |
+| `LUMIBASE_API_URL` |      Yes | —             | Base URL of the running LumiBase API (e.g., `http://localhost:3000`)                                            |
+| `API_SECRET`       |      Yes | —             | Admin secret. Same variable the LumiBase API uses. Read once at startup; used only for the admin bootstrap call |
+| `DEMO_RECIPIENT`   |      Yes | —             | EVM address (checksummed or lowercase) that receives payments. Never sourced from the browser                   |
+| `DEMO_PORT`        |       No | `4000`        | HTTP port the demo server listens on                                                                            |
+| `NODE_ENV`         |       No | `development` | Runtime environment                                                                                             |
 
 **The demo server does not read `WEBHOOK_SECRET` at any time.** Webhook
 signing uses the per-webhook secret returned from
@@ -888,4 +894,4 @@ When the frontend agent finishes, it should report:
 
 ---
 
-*This document defines the integration boundary. It deliberately leaves visual design and user experience decisions to the frontend agent.*
+_This document defines the integration boundary. It deliberately leaves visual design and user experience decisions to the frontend agent._

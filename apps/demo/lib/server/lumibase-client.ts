@@ -1,7 +1,4 @@
-import {
-  BASE_SEPOLIA_CHAIN_ID,
-  BASE_SEPOLIA_USDC_ADDRESS,
-} from '@/lib/lumibase/constants';
+import { BASE_SEPOLIA_CHAIN_ID, BASE_SEPOLIA_USDC_ADDRESS } from '@/lib/lumibase/constants';
 import { ensureApplicationApiKey, UpstreamLumiBaseError } from './bootstrap';
 import type { ValidatedCreatePaymentPayload } from './validation';
 
@@ -137,12 +134,7 @@ export async function getPaymentFromLumiBase(
   fetchImpl: typeof fetch = fetch,
   env: Record<string, string | undefined> = process.env,
 ): Promise<LumiBaseForwardResult> {
-  return forwardToLumiBase(
-    `/api/v1/payments/${paymentId}`,
-    { method: 'GET' },
-    fetchImpl,
-    env,
-  );
+  return forwardToLumiBase(`/api/v1/payments/${paymentId}`, { method: 'GET' }, fetchImpl, env);
 }
 
 export async function getPaymentStatusFromLumiBase(

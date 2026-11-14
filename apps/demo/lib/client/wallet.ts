@@ -1,9 +1,4 @@
-import {
-  createWalletClient,
-  custom,
-  getAddress,
-  type EIP1193Provider,
-} from 'viem';
+import { createWalletClient, custom, getAddress, type EIP1193Provider } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import {
   BASE_SEPOLIA_CHAIN_ID,
@@ -36,9 +31,7 @@ interface EIP6963AnnounceEvent extends Event {
   detail: EIP6963ProviderDetail;
 }
 
-export function discoverInjectedProviders(
-  timeoutMs = 150,
-): Promise<DiscoveredWalletProvider[]> {
+export function discoverInjectedProviders(timeoutMs = 150): Promise<DiscoveredWalletProvider[]> {
   if (typeof window === 'undefined') {
     return Promise.resolve([]);
   }
@@ -66,9 +59,7 @@ export function discoverInjectedProviders(
       window.removeEventListener('eip6963:announceProvider', onAnnounce);
       const list = Array.from(found.values());
       if (list.length === 0) {
-        const legacy = (
-          window as Window & { ethereum?: EIP1193Provider }
-        ).ethereum;
+        const legacy = (window as Window & { ethereum?: EIP1193Provider }).ethereum;
         if (legacy) {
           list.push({
             id: 'window-ethereum',
@@ -82,9 +73,7 @@ export function discoverInjectedProviders(
   });
 }
 
-export async function readWalletChainId(
-  provider: EIP1193Provider,
-): Promise<number> {
+export async function readWalletChainId(provider: EIP1193Provider): Promise<number> {
   const hexChainId = (await provider.request({
     method: 'eth_chainId',
   })) as string;
@@ -109,9 +98,7 @@ export async function connectEip1193Wallet(provider: EIP1193Provider): Promise<{
   return { address, chainId };
 }
 
-export async function switchWalletToBaseSepolia(
-  provider: EIP1193Provider,
-): Promise<number> {
+export async function switchWalletToBaseSepolia(provider: EIP1193Provider): Promise<number> {
   try {
     await provider.request({
       method: 'wallet_switchEthereumChain',

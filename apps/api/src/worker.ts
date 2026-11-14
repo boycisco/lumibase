@@ -479,19 +479,19 @@ async function main(): Promise<void> {
   // we call client.close() exactly once, regardless of whether the loop
   // stopped via signal, error, or natural completion.
   const shutdown = (signal: string): void => {
-    logger.info({ signal }, "worker_stopping");
+    logger.info({ signal }, 'worker_stopping');
     daemon.stop();
   };
 
-  process.on("SIGINT", () => shutdown("SIGINT"));
-  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
 
   try {
     await daemon.done;
     await client.close();
     process.exit(0);
   } catch (err) {
-    logger.error({ err }, "worker_crashed");
+    logger.error({ err }, 'worker_crashed');
     await client.close().catch(() => {});
     process.exit(1);
   }

@@ -28,11 +28,7 @@ import {
   interpretConfirmationResponse,
   isTerminalPaymentStatus,
 } from '@/lib/lumibase/constants';
-import type {
-  ConfirmInterpretation,
-  DemoPublicConfig,
-  WirePayment,
-} from '@/lib/lumibase/types';
+import type { ConfirmInterpretation, DemoPublicConfig, WirePayment } from '@/lib/lumibase/types';
 import {
   BffHttpError,
   confirmDemoPayment,
@@ -127,12 +123,8 @@ export function PaymentConsole() {
   // Wallet state
   const [providers, setProviders] = useState<DiscoveredWalletProvider[]>([]);
   const [selectedProviderId, setSelectedProviderId] = useState<string>('');
-  const [activeProvider, setActiveProvider] = useState<EIP1193Provider | null>(
-    null,
-  );
-  const [walletAddress, setWalletAddress] = useState<`0x${string}` | null>(
-    null,
-  );
+  const [activeProvider, setActiveProvider] = useState<EIP1193Provider | null>(null);
+  const [walletAddress, setWalletAddress] = useState<`0x${string}` | null>(null);
   const [chainId, setChainId] = useState<number | null>(null);
   const [walletConnecting, setWalletConnecting] = useState(false);
   const [switchingChain, setSwitchingChain] = useState(false);
@@ -145,31 +137,24 @@ export function PaymentConsole() {
   const [expiresInSeconds, setExpiresInSeconds] = useState(1800);
   const [payerInput, setPayerInput] = useState('');
   const [creatingPayment, setCreatingPayment] = useState(false);
-  const [createError, setCreateError] = useState<BffHttpError | string | null>(
-    null,
-  );
+  const [createError, setCreateError] = useState<BffHttpError | string | null>(null);
 
   // Active payment + verification state
   const [payment, setPayment] = useState<WirePayment | null>(null);
-  const [submittedTxHash, setSubmittedTxHash] = useState<`0x${string}` | null>(
-    null,
-  );
+  const [submittedTxHash, setSubmittedTxHash] = useState<`0x${string}` | null>(null);
   const [manualTxHashInput, setManualTxHashInput] = useState('');
   const [showManualHashForm, setShowManualHashForm] = useState(false);
   const [sendingTx, setSendingTx] = useState(false);
   const [confirming, setConfirming] = useState(false);
-  const [confirmInterpretation, setConfirmInterpretation] =
-    useState<ConfirmInterpretation | null>(null);
-  const [actionError, setActionError] = useState<BffHttpError | string | null>(
+  const [confirmInterpretation, setConfirmInterpretation] = useState<ConfirmInterpretation | null>(
     null,
   );
+  const [actionError, setActionError] = useState<BffHttpError | string | null>(null);
 
   // Polling state
   const [isPolling, setIsPolling] = useState(false);
   const [pollCount, setPollCount] = useState(0);
-  const [pollNetworkWarning, setPollNetworkWarning] = useState<string | null>(
-    null,
-  );
+  const [pollNetworkWarning, setPollNetworkWarning] = useState<string | null>(null);
   const pollTimerRef = useRef<number | null>(null);
 
   // Clock tick for expiry display
@@ -268,19 +253,14 @@ export function PaymentConsole() {
     const provider = activeProvider as
       | (EIP1193Provider & {
           on?: (event: string, listener: (...args: unknown[]) => void) => void;
-          removeListener?: (
-            event: string,
-            listener: (...args: unknown[]) => void,
-          ) => void;
+          removeListener?: (event: string, listener: (...args: unknown[]) => void) => void;
         })
       | null;
 
     if (!provider?.on || !provider?.removeListener) return;
 
     const handleAccountsChanged = (accountsArg: unknown) => {
-      const accounts = Array.isArray(accountsArg)
-        ? (accountsArg as string[])
-        : [];
+      const accounts = Array.isArray(accountsArg) ? (accountsArg as string[]) : [];
       if (accounts.length === 0) {
         setWalletAddress(null);
       } else {
@@ -350,23 +330,15 @@ export function PaymentConsole() {
               const full = await fetchDemoPayment(paymentId, recordTrace);
               setPayment(full);
               setConfirmInterpretation({
-                kind:
-                  full.status === 'expired'
-                    ? 'terminal_expired'
-                    : 'terminal_success',
+                kind: full.status === 'expired' ? 'terminal_expired' : 'terminal_success',
                 status: full.status,
-                error:
-                  full.status === 'expired' ? 'PAYMENT_EXPIRED' : null,
+                error: full.status === 'expired' ? 'PAYMENT_EXPIRED' : null,
               } as ConfirmInterpretation);
             } catch {
               setConfirmInterpretation({
-                kind:
-                  snapshot.status === 'expired'
-                    ? 'terminal_expired'
-                    : 'terminal_success',
+                kind: snapshot.status === 'expired' ? 'terminal_expired' : 'terminal_success',
                 status: snapshot.status,
-                error:
-                  snapshot.status === 'expired' ? 'PAYMENT_EXPIRED' : null,
+                error: snapshot.status === 'expired' ? 'PAYMENT_EXPIRED' : null,
               } as ConfirmInterpretation);
             }
             return;
@@ -406,12 +378,10 @@ export function PaymentConsole() {
     try {
       let target = overrideProvider;
       if (!target) {
-        const list =
-          providers.length > 0 ? providers : await discoverInjectedProviders();
+        const list = providers.length > 0 ? providers : await discoverInjectedProviders();
         if (list.length > 0) {
           setProviders(list);
-          target =
-            list.find((p) => p.id === selectedProviderId) ?? list[0];
+          target = list.find((p) => p.id === selectedProviderId) ?? list[0];
         }
       }
 
@@ -422,9 +392,7 @@ export function PaymentConsole() {
         return;
       }
 
-      const { address, chainId: activeChain } = await connectEip1193Wallet(
-        target.provider,
-      );
+      const { address, chainId: activeChain } = await connectEip1193Wallet(target.provider);
       setActiveProvider(target.provider);
       setSelectedProviderId(target.id);
       setWalletAddress(address);
@@ -451,11 +419,7 @@ export function PaymentConsole() {
   };
 
   const handleTopBarWalletAction = () => {
-    if (
-      walletAddress !== null &&
-      chainId !== null &&
-      chainId !== BASE_SEPOLIA_CHAIN_ID
-    ) {
+    if (walletAddress !== null && chainId !== null && chainId !== BASE_SEPOLIA_CHAIN_ID) {
       void handleSwitchToBaseSepolia();
       return;
     }
@@ -467,19 +431,14 @@ export function PaymentConsole() {
     el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
-  const amountPreview = useMemo(
-    () => previewUsdcAmount(amountInput),
-    [amountInput],
-  );
+  const amountPreview = useMemo(() => previewUsdcAmount(amountInput), [amountInput]);
 
   const handleCreatePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateError(null);
 
     if (!amountPreview.valid) {
-      setCreateError(
-        amountPreview.error ?? 'Enter a valid USDC amount before continuing.',
-      );
+      setCreateError(amountPreview.error ?? 'Enter a valid USDC amount before continuing.');
       return;
     }
 
@@ -508,11 +467,7 @@ export function PaymentConsole() {
       setPayment(created);
       setNowMs(Date.now());
     } catch (err) {
-      setCreateError(
-        err instanceof BffHttpError
-          ? err
-          : 'Failed to create payment request.',
-      );
+      setCreateError(err instanceof BffHttpError ? err : 'Failed to create payment request.');
     } finally {
       setCreatingPayment(false);
     }
@@ -523,11 +478,7 @@ export function PaymentConsole() {
       setConfirming(true);
       setActionError(null);
       try {
-        const result = await confirmDemoPayment(
-          paymentId,
-          txHash,
-          recordTrace,
-        );
+        const result = await confirmDemoPayment(paymentId, txHash, recordTrace);
         setPayment(result.payment);
         const interpretation = interpretConfirmationResponse(result);
         setConfirmInterpretation(interpretation);
@@ -593,9 +544,7 @@ export function PaymentConsole() {
     if (!payment) return;
     const trimmed = manualTxHashInput.trim();
     if (!TX_HASH_REGEX.test(trimmed)) {
-      setActionError(
-        'Enter a valid 66-character 0x-prefixed Base Sepolia transaction hash.',
-      );
+      setActionError('Enter a valid 66-character 0x-prefixed Base Sepolia transaction hash.');
       return;
     }
     setSubmittedTxHash(trimmed as `0x${string}`);
@@ -611,18 +560,13 @@ export function PaymentConsole() {
       if (isTerminalPaymentStatus(updated.status)) {
         stopPolling();
         setConfirmInterpretation({
-          kind:
-            updated.status === 'expired'
-              ? 'terminal_expired'
-              : 'terminal_success',
+          kind: updated.status === 'expired' ? 'terminal_expired' : 'terminal_success',
           status: updated.status,
           error: updated.status === 'expired' ? 'PAYMENT_EXPIRED' : null,
         } as ConfirmInterpretation);
       }
     } catch (err) {
-      setActionError(
-        err instanceof BffHttpError ? err : 'Failed to refresh payment.',
-      );
+      setActionError(err instanceof BffHttpError ? err : 'Failed to refresh payment.');
     }
   };
 
@@ -685,10 +629,8 @@ export function PaymentConsole() {
       {
         title: 'USDC transfer submitted by wallet',
         detail:
-          submittedTxHash ?? payment?.transactionHash
-            ? formatShortAddress(
-                (submittedTxHash ?? payment?.transactionHash) as string,
-              )
+          (submittedTxHash ?? payment?.transactionHash)
+            ? formatShortAddress((submittedTxHash ?? payment?.transactionHash) as string)
             : 'ERC-20 transfer(recipient, amount)',
         done: step3Done,
         active: step2Done && !step3Done && !isTerminal,
@@ -751,17 +693,14 @@ export function PaymentConsole() {
                 Base Sepolia USDC Payment Verification
               </h1>
               <p className="text-base leading-relaxed text-slate-600">
-                Create a payment request, sign an on-chain USDC transfer with
-                your wallet, and observe LumiBase independently verify the
-                receipt through the server-side BFF.
+                Create a payment request, sign an on-chain USDC transfer with your wallet, and
+                observe LumiBase independently verify the receipt through the server-side BFF.
               </p>
             </div>
 
             {config && (
               <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-xs space-y-1 shrink-0">
-                <div className="font-medium text-slate-500">
-                  Server-Configured Recipient
-                </div>
+                <div className="font-medium text-slate-500">Server-Configured Recipient</div>
                 <div className="flex items-center gap-2 font-mono font-medium text-slate-900">
                   <span>{formatShortAddress(config.recipient)}</span>
                   <button
@@ -795,13 +734,9 @@ export function PaymentConsole() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm font-semibold text-amber-950">
                   <AlertTriangle className="h-4 w-4 text-amber-700 shrink-0" aria-hidden="true" />
-                  <span>
-                    Demo Server Configuration Required (HTTP {configError.status})
-                  </span>
+                  <span>Demo Server Configuration Required (HTTP {configError.status})</span>
                 </div>
-                <p className="text-sm text-amber-900 max-w-3xl">
-                  {configError.message}
-                </p>
+                <p className="text-sm text-amber-900 max-w-3xl">{configError.message}</p>
                 <div className="flex flex-wrap items-center gap-3 font-mono text-xs text-amber-800">
                   <span>code: {configError.code}</span>
                   {configError.requestId && (
@@ -899,9 +834,7 @@ export function PaymentConsole() {
                         <Wallet className="h-4 w-4" aria-hidden="true" />
                       )}
                       <span>
-                        {walletConnecting
-                          ? 'Connecting Wallet...'
-                          : 'Connect EIP-1193 Wallet'}
+                        {walletConnecting ? 'Connecting Wallet...' : 'Connect EIP-1193 Wallet'}
                       </span>
                     </button>
                   )}
@@ -930,9 +863,8 @@ export function PaymentConsole() {
                   {!isOnBaseSepolia && (
                     <div className="flex flex-col gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="text-sm text-amber-950">
-                        <span className="font-semibold">Wrong network.</span>{' '}
-                        LumiBase v0.1 payments require Base Sepolia (84532). Base
-                        Mainnet is disabled.
+                        <span className="font-semibold">Wrong network.</span> LumiBase v0.1 payments
+                        require Base Sepolia (84532). Base Mainnet is disabled.
                       </div>
                       <button
                         type="button"
@@ -955,7 +887,10 @@ export function PaymentConsole() {
                   role="alert"
                   className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800"
                 >
-                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" aria-hidden="true" />
+                  <AlertCircle
+                    className="mt-0.5 h-4 w-4 shrink-0 text-red-600"
+                    aria-hidden="true"
+                  />
                   <span>{walletError}</span>
                 </div>
               )}
@@ -969,8 +904,8 @@ export function PaymentConsole() {
                     02. Create Payment Request
                   </h2>
                   <p className="text-sm text-slate-600">
-                    Enter a USDC amount (up to 6 decimals). Recipient, chain, and
-                    token are enforced by the BFF.
+                    Enter a USDC amount (up to 6 decimals). Recipient, chain, and token are enforced
+                    by the BFF.
                   </p>
                 </div>
 
@@ -989,9 +924,7 @@ export function PaymentConsole() {
                 <form onSubmit={(e) => void handleCreatePayment(e)} className="space-y-4">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <label className="block space-y-1.5">
-                      <span className="text-xs font-semibold text-slate-700">
-                        Amount (USDC)
-                      </span>
+                      <span className="text-xs font-semibold text-slate-700">Amount (USDC)</span>
                       <div className="relative">
                         <input
                           type="text"
@@ -1012,17 +945,13 @@ export function PaymentConsole() {
                       </div>
                       <div className="min-h-[18px] text-xs">
                         {amountPreview.error ? (
-                          <span className="text-red-600 font-medium">
-                            {amountPreview.error}
-                          </span>
+                          <span className="text-red-600 font-medium">{amountPreview.error}</span>
                         ) : amountPreview.baseUnits ? (
                           <span className="font-mono tabular-nums text-slate-500">
                             Wire base units: {amountPreview.baseUnits}
                           </span>
                         ) : (
-                          <span className="text-slate-400">
-                            6 decimal places maximum
-                          </span>
+                          <span className="text-slate-400">6 decimal places maximum</span>
                         )}
                       </div>
                     </label>
@@ -1067,9 +996,7 @@ export function PaymentConsole() {
                           </span>
                           <select
                             value={expiresInSeconds}
-                            onChange={(e) =>
-                              setExpiresInSeconds(Number(e.target.value))
-                            }
+                            onChange={(e) => setExpiresInSeconds(Number(e.target.value))}
                             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-900 focus:border-blue-600 focus:outline-none"
                           >
                             <option value={300}>5 minutes (300s)</option>
@@ -1135,9 +1062,7 @@ export function PaymentConsole() {
                         <ArrowRight className="h-4 w-4" aria-hidden="true" />
                       )}
                       <span>
-                        {creatingPayment
-                          ? 'Creating Payment...'
-                          : 'Create Payment Request'}
+                        {creatingPayment ? 'Creating Payment...' : 'Create Payment Request'}
                       </span>
                     </button>
                   </div>
@@ -1146,9 +1071,7 @@ export function PaymentConsole() {
                 <div className="space-y-4">
                   <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
                     <div className="space-y-1">
-                      <div className="text-xs font-medium text-slate-500">
-                        Payment ID
-                      </div>
+                      <div className="text-xs font-medium text-slate-500">Payment ID</div>
                       <div className="flex items-center gap-2 font-mono text-xs font-semibold text-slate-900 break-all">
                         <span>{payment.id}</span>
                         <button
@@ -1173,11 +1096,7 @@ export function PaymentConsole() {
                     <div>
                       <dt className="text-slate-500">Amount</dt>
                       <dd className="mt-1 font-mono font-semibold tabular-nums text-slate-900">
-                        {formatUnits(
-                          BigInt(payment.amount),
-                          BASE_SEPOLIA_USDC_DECIMALS,
-                        )}{' '}
-                        USDC
+                        {formatUnits(BigInt(payment.amount), BASE_SEPOLIA_USDC_DECIMALS)} USDC
                       </dd>
                     </div>
                     <div>
@@ -1203,9 +1122,7 @@ export function PaymentConsole() {
                   {payment.reference && (
                     <div className="text-xs text-slate-500">
                       Reference:{' '}
-                      <span className="font-mono text-slate-800">
-                        {payment.reference}
-                      </span>
+                      <span className="font-mono text-slate-800">{payment.reference}</span>
                     </div>
                   )}
                 </div>
@@ -1219,15 +1136,15 @@ export function PaymentConsole() {
                   03. Submit USDC Transfer and Verify with LumiBase
                 </h2>
                 <p className="text-sm text-slate-600">
-                  Wallet submission broadcasts the ERC-20 transfer. LumiBase
-                  must independently verify the receipt before confirming.
+                  Wallet submission broadcasts the ERC-20 transfer. LumiBase must independently
+                  verify the receipt before confirming.
                 </p>
               </div>
 
               {!payment ? (
                 <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-500">
-                  Create a payment request above to enable wallet transfer and
-                  LumiBase verification.
+                  Create a payment request above to enable wallet transfer and LumiBase
+                  verification.
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -1237,12 +1154,7 @@ export function PaymentConsole() {
                       <button
                         type="button"
                         onClick={() => void handleSendUsdcAndVerify()}
-                        disabled={
-                          sendingTx ||
-                          confirming ||
-                          !walletAddress ||
-                          !isOnBaseSepolia
-                        }
+                        disabled={sendingTx || confirming || !walletAddress || !isOnBaseSepolia}
                         className="min-h-[44px] inline-flex items-center gap-2 rounded-lg bg-[#0052FF] px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {sendingTx ? (
@@ -1265,9 +1177,7 @@ export function PaymentConsole() {
                         onClick={() => setShowManualHashForm((v) => !v)}
                         className="min-h-[44px] rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
                       >
-                        {showManualHashForm
-                          ? 'Hide Manual Hash Input'
-                          : 'Submit Existing Tx Hash'}
+                        {showManualHashForm ? 'Hide Manual Hash Input' : 'Submit Existing Tx Hash'}
                       </button>
 
                       <button
@@ -1336,8 +1246,8 @@ export function PaymentConsole() {
                       </div>
                       {!isTerminal && (
                         <div className="text-slate-500">
-                          Wallet submission alone is not payment confirmation.
-                          LumiBase verification determines final status.
+                          Wallet submission alone is not payment confirmation. LumiBase verification
+                          determines final status.
                         </div>
                       )}
                     </div>
@@ -1358,27 +1268,24 @@ export function PaymentConsole() {
                         </span>
                       </div>
                       <div>
-                        {typeof actionError === 'string'
-                          ? actionError
-                          : actionError.message}
+                        {typeof actionError === 'string' ? actionError : actionError.message}
                       </div>
-                      {typeof actionError !== 'string' &&
-                        actionError.requestId && (
-                          <div className="font-mono text-[11px] text-red-700">
-                            requestId: {actionError.requestId}
-                          </div>
-                        )}
+                      {typeof actionError !== 'string' && actionError.requestId && (
+                        <div className="font-mono text-[11px] text-red-700">
+                          requestId: {actionError.requestId}
+                        </div>
+                      )}
                     </div>
                   )}
 
                   {/* Authoritative Confirmation / Lifecycle Outcome Display */}
                   {confirming && (
                     <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
-                      <Loader2 className="h-4 w-4 animate-spin shrink-0 text-blue-700" aria-hidden="true" />
-                      <span>
-                        LumiBase is verifying the transaction receipt on Base
-                        Sepolia...
-                      </span>
+                      <Loader2
+                        className="h-4 w-4 animate-spin shrink-0 text-blue-700"
+                        aria-hidden="true"
+                      />
+                      <span>LumiBase is verifying the transaction receipt on Base Sepolia...</span>
                     </div>
                   )}
 
@@ -1388,12 +1295,13 @@ export function PaymentConsole() {
                       <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 space-y-3 text-xs text-amber-950">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div className="flex items-center gap-2 font-semibold text-sm">
-                            <AlertTriangle className="h-4 w-4 text-amber-700 shrink-0" aria-hidden="true" />
+                            <AlertTriangle
+                              className="h-4 w-4 text-amber-700 shrink-0"
+                              aria-hidden="true"
+                            />
                             <span>
                               Verification Outcome:{' '}
-                              <code className="font-mono">
-                                {verificationSpec.code}
-                              </code>
+                              <code className="font-mono">{verificationSpec.code}</code>
                             </span>
                           </div>
                           <span className="font-mono text-xs text-amber-800">
@@ -1401,28 +1309,20 @@ export function PaymentConsole() {
                           </span>
                         </div>
                         <p className="text-sm text-amber-900">
-                          <span className="font-semibold">
-                            {verificationSpec.meaning}.
-                          </span>{' '}
+                          <span className="font-semibold">{verificationSpec.meaning}.</span>{' '}
                           {verificationSpec.guidance}
                         </p>
                         <div className="flex flex-wrap items-center gap-3">
-                          {verificationSpec.action === 'retry_same_hash' &&
-                            submittedTxHash && (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  void runConfirmation(
-                                    payment.id,
-                                    submittedTxHash,
-                                  )
-                                }
-                                className="min-h-[38px] inline-flex items-center gap-1.5 rounded-lg bg-amber-700 px-4 py-2 text-xs font-semibold text-white hover:bg-amber-800 transition-colors"
-                              >
-                                <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
-                                <span>Retry Verification with Same Hash</span>
-                              </button>
-                            )}
+                          {verificationSpec.action === 'retry_same_hash' && submittedTxHash && (
+                            <button
+                              type="button"
+                              onClick={() => void runConfirmation(payment.id, submittedTxHash)}
+                              className="min-h-[38px] inline-flex items-center gap-1.5 rounded-lg bg-amber-700 px-4 py-2 text-xs font-semibold text-white hover:bg-amber-800 transition-colors"
+                            >
+                              <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
+                              <span>Retry Verification with Same Hash</span>
+                            </button>
+                          )}
                         </div>
                       </div>
                     )}
@@ -1430,7 +1330,10 @@ export function PaymentConsole() {
                   {isPolling && (
                     <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-blue-200 bg-blue-50/70 p-3.5 text-xs text-blue-900">
                       <div className="flex items-center gap-2">
-                        <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-700 shrink-0" aria-hidden="true" />
+                        <Loader2
+                          className="h-3.5 w-3.5 animate-spin text-blue-700 shrink-0"
+                          aria-hidden="true"
+                        />
                         <span className="tabular-nums">
                           Polling <code className="font-mono">GET /demo/payments/:id/status</code>{' '}
                           (attempt {pollCount}/{MAX_POLL_ATTEMPTS})...
@@ -1462,7 +1365,10 @@ export function PaymentConsole() {
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 text-base font-semibold text-emerald-900">
-                          <ShieldCheck className="h-5 w-5 text-emerald-700 shrink-0" aria-hidden="true" />
+                          <ShieldCheck
+                            className="h-5 w-5 text-emerald-700 shrink-0"
+                            aria-hidden="true"
+                          />
                           <span>Payment Confirmed by LumiBase</span>
                         </div>
                         <span className="font-mono text-xs font-semibold text-emerald-800">
@@ -1470,8 +1376,7 @@ export function PaymentConsole() {
                         </span>
                       </div>
                       <p className="text-sm text-emerald-900">
-                        LumiBase independently verified the exact Base Sepolia
-                        USDC transfer ({' '}
+                        LumiBase independently verified the exact Base Sepolia USDC transfer ({' '}
                         <span className="font-mono tabular-nums">
                           {formatUnits(
                             BigInt(payment.confirmedAmount ?? payment.amount),
@@ -1480,10 +1385,7 @@ export function PaymentConsole() {
                           USDC
                         </span>
                         ) to{' '}
-                        <span className="font-mono">
-                          {formatShortAddress(payment.recipient)}
-                        </span>
-                        .
+                        <span className="font-mono">{formatShortAddress(payment.recipient)}</span>.
                       </p>
                       <div className="flex flex-wrap items-center gap-3 pt-1">
                         {(payment.transactionHash ?? submittedTxHash) && (
@@ -1510,12 +1412,14 @@ export function PaymentConsole() {
                     </motion.div>
                   )}
 
-                  {(payment.status === 'underpaid' ||
-                    payment.status === 'overpaid') && (
+                  {(payment.status === 'underpaid' || payment.status === 'overpaid') && (
                     <div className="rounded-lg border border-amber-300 bg-amber-50 p-5 space-y-2.5">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 text-base font-semibold text-amber-950">
-                          <AlertTriangle className="h-5 w-5 text-amber-700 shrink-0" aria-hidden="true" />
+                          <AlertTriangle
+                            className="h-5 w-5 text-amber-700 shrink-0"
+                            aria-hidden="true"
+                          />
                           <span>
                             {payment.status === 'underpaid'
                               ? 'Payment Terminal: Underpaid'
@@ -1548,9 +1452,7 @@ export function PaymentConsole() {
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 text-base font-semibold text-red-950">
                           <XCircle className="h-5 w-5 text-red-700 shrink-0" aria-hidden="true" />
-                          <span>
-                            Payment Terminal: {payment.status.toUpperCase()}
-                          </span>
+                          <span>Payment Terminal: {payment.status.toUpperCase()}</span>
                         </div>
                         <span className="font-mono text-xs font-semibold text-red-800">
                           Terminal
@@ -1580,9 +1482,7 @@ export function PaymentConsole() {
             {/* Lifecycle Progression */}
             <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-slate-900">
-                  Payment Journey State
-                </h2>
+                <h2 className="text-sm font-semibold text-slate-900">Payment Journey State</h2>
                 <span className="text-xs font-mono text-slate-500">
                   {payment ? payment.status : 'idle'}
                 </span>
@@ -1600,25 +1500,17 @@ export function PaymentConsole() {
                             : 'border-slate-300 bg-white text-slate-500'
                       }`}
                     >
-                      {step.done ? (
-                        <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                      ) : (
-                        index + 1
-                      )}
+                      {step.done ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : index + 1}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div
                         className={`text-sm font-medium ${
-                          step.done || step.active
-                            ? 'text-slate-900'
-                            : 'text-slate-500'
+                          step.done || step.active ? 'text-slate-900' : 'text-slate-500'
                         }`}
                       >
                         {step.title}
                       </div>
-                      <div className="truncate font-mono text-xs text-slate-500">
-                        {step.detail}
-                      </div>
+                      <div className="truncate font-mono text-xs text-slate-500">{step.detail}</div>
                     </div>
                   </li>
                 ))}
@@ -1629,12 +1521,10 @@ export function PaymentConsole() {
             <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-4">
               <div className="flex items-center justify-between gap-2">
                 <div>
-                  <h2 className="text-sm font-semibold text-slate-900">
-                    Same-Origin BFF Traffic
-                  </h2>
+                  <h2 className="text-sm font-semibold text-slate-900">Same-Origin BFF Traffic</h2>
                   <p className="text-xs text-slate-500">
-                    Browser calls only <code className="font-mono">/demo/*</code>.
-                    No API keys or LumiBase URLs leave the server.
+                    Browser calls only <code className="font-mono">/demo/*</code>. No API keys or
+                    LumiBase URLs leave the server.
                   </p>
                 </div>
                 {traces.length > 0 && (
@@ -1665,17 +1555,11 @@ export function PaymentConsole() {
                           <span className="truncate">{entry.path}</span>
                         </div>
                         <div className="font-mono text-[11px] text-slate-500">
-                          {entry.paymentStatus && (
-                            <span>status={entry.paymentStatus} </span>
-                          )}
+                          {entry.paymentStatus && <span>status={entry.paymentStatus} </span>}
                           {entry.errorCode && (
-                            <span className="text-amber-700">
-                              error={entry.errorCode}{' '}
-                            </span>
+                            <span className="text-amber-700">error={entry.errorCode} </span>
                           )}
-                          {entry.requestId && (
-                            <span>req={entry.requestId.slice(0, 8)}…</span>
-                          )}
+                          {entry.requestId && <span>req={entry.requestId.slice(0, 8)}…</span>}
                         </div>
                       </div>
 
@@ -1691,9 +1575,7 @@ export function PaymentConsole() {
                         >
                           {entry.httpStatus}
                         </div>
-                        <div className="text-[11px] text-slate-400">
-                          {entry.durationMs}ms
-                        </div>
+                        <div className="text-[11px] text-slate-400">{entry.durationMs}ms</div>
                       </div>
                     </div>
                   ))}

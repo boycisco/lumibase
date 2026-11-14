@@ -19,9 +19,7 @@ export interface ConfigValidationSuccess {
   config: DemoServerConfig;
 }
 
-export type ConfigValidationResult =
-  | ConfigValidationSuccess
-  | ConfigValidationFailure;
+export type ConfigValidationResult = ConfigValidationSuccess | ConfigValidationFailure;
 
 export class DemoConfigurationError extends Error {
   readonly code = 'DEMO_CONFIGURATION_ERROR';

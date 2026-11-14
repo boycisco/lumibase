@@ -1,10 +1,4 @@
-import {
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  Loader2,
-  XCircle,
-} from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock, Loader2, XCircle } from 'lucide-react';
 import type { PaymentStatus } from '@/lib/lumibase/types';
 
 interface StatusIndicatorProps {

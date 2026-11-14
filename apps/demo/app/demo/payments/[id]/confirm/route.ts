@@ -29,9 +29,7 @@ export async function POST(
       throw new RequestValidationError('Request body must be a JSON object.');
     }
 
-    const txHash = validateTransactionHash(
-      (rawBody as Record<string, unknown>).transactionHash,
-    );
+    const txHash = validateTransactionHash((rawBody as Record<string, unknown>).transactionHash);
 
     const result = await confirmPaymentInLumiBase(validId, txHash);
 

@@ -66,10 +66,7 @@ export function checkRateLimit(
   }
 
   if (existing.count >= maxRequests) {
-    const retryAfterSeconds = Math.max(
-      1,
-      Math.ceil((existing.resetAt - now) / 1000),
-    );
+    const retryAfterSeconds = Math.max(1, Math.ceil((existing.resetAt - now) / 1000));
     return {
       allowed: false,
       retryAfterSeconds,

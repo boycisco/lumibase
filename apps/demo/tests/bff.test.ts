@@ -23,10 +23,7 @@ import {
   getPaymentFromLumiBase,
   getPaymentStatusFromLumiBase,
 } from '@/lib/server/lumibase-client';
-import {
-  checkRateLimit,
-  resetRateLimiterForTesting,
-} from '@/lib/server/rate-limit';
+import { checkRateLimit, resetRateLimiterForTesting } from '@/lib/server/rate-limit';
 import {
   RequestValidationError,
   validateAndConvertUsdcAmount,
@@ -78,11 +75,7 @@ describe('Server configuration validation (§12)', () => {
     const result = validateServerConfig({});
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.missing).toEqual([
-        'LUMIBASE_API_URL',
-        'API_SECRET',
-        'DEMO_RECIPIENT',
-      ]);
+      expect(result.missing).toEqual(['LUMIBASE_API_URL', 'API_SECRET', 'DEMO_RECIPIENT']);
     }
 
     expect(() => assertValidServerConfig({})).toThrow(DemoConfigurationError);
@@ -109,9 +102,7 @@ describe('Server configuration validation (§12)', () => {
     });
 
     expect(config.lumibaseApiUrl).toBe('http://localhost:3000');
-    expect(config.demoRecipient).toBe(
-      '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-    );
+    expect(config.demoRecipient).toBe('0x036CbD53842c5426634e7929541eC2318f3dCF7e');
   });
 });
 
@@ -120,36 +111,22 @@ describe('BFF request validation & integer-safe USDC arithmetic (§5.3, §6.2)',
     expect(validateAndConvertUsdcAmount('1.5').baseUnits).toBe('1500000');
     expect(validateAndConvertUsdcAmount('0.000001').baseUnits).toBe('1');
     expect(validateAndConvertUsdcAmount('1000').baseUnits).toBe('1000000000');
-    expect(validateAndConvertUsdcAmount('12.345678').baseUnits).toBe(
-      '12345678',
-    );
+    expect(validateAndConvertUsdcAmount('12.345678').baseUnits).toBe('12345678');
   });
 
   it('rejects amounts with more than 6 decimal places without silent truncation', () => {
-    expect(() => validateAndConvertUsdcAmount('1.5000001')).toThrow(
-      RequestValidationError,
-    );
+    expect(() => validateAndConvertUsdcAmount('1.5000001')).toThrow(RequestValidationError);
     expect(() => validateAndConvertUsdcAmount('0.0000009')).toThrow(
       'Amount has more than 6 decimal places.',
     );
   });
 
   it('rejects zero, negative, non-string, and malformed amounts', () => {
-    expect(() => validateAndConvertUsdcAmount('0')).toThrow(
-      RequestValidationError,
-    );
-    expect(() => validateAndConvertUsdcAmount('0.000000')).toThrow(
-      RequestValidationError,
-    );
-    expect(() => validateAndConvertUsdcAmount('-1.5')).toThrow(
-      RequestValidationError,
-    );
-    expect(() => validateAndConvertUsdcAmount(1.5)).toThrow(
-      RequestValidationError,
-    );
-    expect(() => validateAndConvertUsdcAmount('1e-6')).toThrow(
-      RequestValidationError,
-    );
+    expect(() => validateAndConvertUsdcAmount('0')).toThrow(RequestValidationError);
+    expect(() => validateAndConvertUsdcAmount('0.000000')).toThrow(RequestValidationError);
+    expect(() => validateAndConvertUsdcAmount('-1.5')).toThrow(RequestValidationError);
+    expect(() => validateAndConvertUsdcAmount(1.5)).toThrow(RequestValidationError);
+    expect(() => validateAndConvertUsdcAmount('1e-6')).toThrow(RequestValidationError);
   });
 
   it('rejects browser-supplied recipient, chainId, or token overrides', () => {
@@ -170,14 +147,10 @@ describe('BFF request validation & integer-safe USDC arithmetic (§5.3, §6.2)',
 
   it('validates payment UUIDs and 66-char transaction hashes', () => {
     expect(validatePaymentId(SAMPLE_PAYMENT_ID)).toBe(SAMPLE_PAYMENT_ID);
-    expect(() => validatePaymentId('../applications')).toThrow(
-      RequestValidationError,
-    );
+    expect(() => validatePaymentId('../applications')).toThrow(RequestValidationError);
 
     expect(validateTransactionHash(SAMPLE_TX_HASH)).toBe(SAMPLE_TX_HASH);
-    expect(() => validateTransactionHash('0x1234')).toThrow(
-      RequestValidationError,
-    );
+    expect(() => validateTransactionHash('0x1234')).toThrow(RequestValidationError);
   });
 });
 
@@ -208,10 +181,7 @@ describe('Application bootstrap & server-side API key handling (§3.3, §7.1)', 
     ]);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url, init] = fetchMock.mock.calls[0] as unknown as [
-      string,
-      RequestInit,
-    ];
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe('http://127.0.0.1:4999/api/v1/applications');
     expect((init.headers as Record<string, string>).Authorization).toBe(
       `Admin ${VALID_ENV.API_SECRET}`,
@@ -240,9 +210,7 @@ describe('Server-to-LumiBase client & verbatim error pass-through (§6.2, §7)',
           { status: 201 },
         ),
       )
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify(createdPayment), { status: 201 }),
-      );
+      .mockResolvedValueOnce(new Response(JSON.stringify(createdPayment), { status: 201 }));
 
     const validated = validateCreatePaymentBody({
       amount: '1.5',
@@ -258,10 +226,7 @@ describe('Server-to-LumiBase client & verbatim error pass-through (§6.2, §7)',
     expect(res.status).toBe(201);
     expect(res.body).toEqual(createdPayment);
 
-    const [paymentUrl, paymentInit] = fetchMock.mock.calls[1] as [
-      string,
-      RequestInit,
-    ];
+    const [paymentUrl, paymentInit] = fetchMock.mock.calls[1] as [string, RequestInit];
     expect(paymentUrl).toBe('http://127.0.0.1:4999/api/v1/payments');
     expect((paymentInit.headers as Record<string, string>).Authorization).toBe(
       'Bearer lb_live_memory_key',
@@ -289,10 +254,9 @@ describe('Server-to-LumiBase client & verbatim error pass-through (§6.2, §7)',
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({ application: { id: 'app-1' }, key: 'lb_key' }),
-          { status: 201 },
-        ),
+        new Response(JSON.stringify({ application: { id: 'app-1' }, key: 'lb_key' }), {
+          status: 201,
+        }),
       )
       .mockResolvedValueOnce(
         new Response(JSON.stringify(errorEnvelope), {
@@ -320,14 +284,11 @@ describe('Server-to-LumiBase client & verbatim error pass-through (§6.2, §7)',
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({ application: { id: 'app-1' }, key: 'lb_key' }),
-          { status: 201 },
-        ),
+        new Response(JSON.stringify({ application: { id: 'app-1' }, key: 'lb_key' }), {
+          status: 201,
+        }),
       )
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify(confirmOutcome), { status: 200 }),
-      );
+      .mockResolvedValueOnce(new Response(JSON.stringify(confirmOutcome), { status: 200 }));
 
     const res = await confirmPaymentInLumiBase(
       SAMPLE_PAYMENT_ID,
@@ -349,14 +310,11 @@ describe('Server-to-LumiBase client & verbatim error pass-through (§6.2, §7)',
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({ application: { id: 'app-1' }, key: 'lb_key' }),
-          { status: 201 },
-        ),
+        new Response(JSON.stringify({ application: { id: 'app-1' }, key: 'lb_key' }), {
+          status: 201,
+        }),
       )
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify(snapshot), { status: 200 }),
-      );
+      .mockResolvedValueOnce(new Response(JSON.stringify(snapshot), { status: 200 }));
 
     const res = await getPaymentStatusFromLumiBase(
       SAMPLE_PAYMENT_ID,
@@ -389,9 +347,7 @@ describe('Next.js /demo/* BFF route handlers integration', () => {
     delete process.env.API_SECRET;
     delete process.env.DEMO_RECIPIENT;
 
-    const response = await getConfigRoute(
-      new Request('http://localhost:3000/demo/config'),
-    );
+    const response = await getConfigRoute(new Request('http://localhost:3000/demo/config'));
     expect(response.status).toBe(503);
     const body = (await response.json()) as { error: { code: string } };
     expect(body.error.code).toBe('DEMO_CONFIGURATION_ERROR');
@@ -409,9 +365,7 @@ describe('Next.js /demo/* BFF route handlers integration', () => {
       );
     }) as unknown as typeof fetch;
 
-    const response = await getConfigRoute(
-      new Request('http://localhost:3000/demo/config'),
-    );
+    const response = await getConfigRoute(new Request('http://localhost:3000/demo/config'));
     expect(response.status).toBe(200);
     const text = await response.text();
     expect(text).not.toContain(VALID_ENV.API_SECRET);
@@ -460,19 +414,15 @@ describe('Next.js /demo/* BFF route handlers integration', () => {
     globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
       if (url.endsWith('/api/v1/applications')) {
-        return new Response(
-          JSON.stringify({ application: { id: 'app-1' }, key: 'lb_key_123' }),
-          { status: 201 },
-        );
+        return new Response(JSON.stringify({ application: { id: 'app-1' }, key: 'lb_key_123' }), {
+          status: 201,
+        });
       }
       if (url.endsWith('/api/v1/payments')) {
         return new Response(JSON.stringify(created), { status: 201 });
       }
       if (url.endsWith(`/api/v1/payments/${SAMPLE_PAYMENT_ID}/confirm`)) {
-        return new Response(
-          JSON.stringify({ payment: confirmed, error: null }),
-          { status: 200 },
-        );
+        return new Response(JSON.stringify({ payment: confirmed, error: null }), { status: 200 });
       }
       if (url.endsWith(`/api/v1/payments/${SAMPLE_PAYMENT_ID}/status`)) {
         return new Response(
@@ -502,14 +452,11 @@ describe('Next.js /demo/* BFF route handlers integration', () => {
     expect(createRes.status).toBe(201);
 
     const confirmRes = await confirmPaymentRoute(
-      new Request(
-        `http://localhost:3000/demo/payments/${SAMPLE_PAYMENT_ID}/confirm`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ transactionHash: SAMPLE_TX_HASH }),
-        },
-      ),
+      new Request(`http://localhost:3000/demo/payments/${SAMPLE_PAYMENT_ID}/confirm`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transactionHash: SAMPLE_TX_HASH }),
+      }),
       { params: Promise.resolve({ id: SAMPLE_PAYMENT_ID }) },
     );
     expect(confirmRes.status).toBe(200);
@@ -518,9 +465,7 @@ describe('Next.js /demo/* BFF route handlers integration', () => {
     expect(confirmBody.error).toBeNull();
 
     const statusRes = await getStatusRoute(
-      new Request(
-        `http://localhost:3000/demo/payments/${SAMPLE_PAYMENT_ID}/status`,
-      ),
+      new Request(`http://localhost:3000/demo/payments/${SAMPLE_PAYMENT_ID}/status`),
       { params: Promise.resolve({ id: SAMPLE_PAYMENT_ID }) },
     );
     expect(statusRes.status).toBe(200);

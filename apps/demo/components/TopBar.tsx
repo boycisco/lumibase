@@ -10,16 +10,9 @@ interface TopBarProps {
   onWalletAction: () => void;
 }
 
-export function TopBar({
-  walletAddress,
-  chainId,
-  connecting,
-  onWalletAction,
-}: TopBarProps) {
+export function TopBar({ walletAddress, chainId, connecting, onWalletAction }: TopBarProps) {
   const isWrongChain =
-    walletAddress !== null &&
-    chainId !== null &&
-    chainId !== BASE_SEPOLIA_CHAIN_ID;
+    walletAddress !== null && chainId !== null && chainId !== BASE_SEPOLIA_CHAIN_ID;
 
   let actionLabel = 'Connect Wallet';
   if (connecting) {

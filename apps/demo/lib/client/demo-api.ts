@@ -82,8 +82,7 @@ async function callBff<T>(
 
     const code = maybeEnvelope?.error?.code ?? `HTTP_${response.status}`;
     const message =
-      maybeEnvelope?.error?.message ??
-      `Demo server returned HTTP ${response.status}.`;
+      maybeEnvelope?.error?.message ?? `Demo server returned HTTP ${response.status}.`;
     const requestId = maybeEnvelope?.error?.requestId ?? null;
 
     onTrace?.({
@@ -103,26 +102,18 @@ async function callBff<T>(
       message,
       requestId,
       retryAfterSeconds:
-        retryAfterSeconds !== null && Number.isFinite(retryAfterSeconds)
-          ? retryAfterSeconds
-          : null,
+        retryAfterSeconds !== null && Number.isFinite(retryAfterSeconds) ? retryAfterSeconds : null,
       envelope: maybeEnvelope,
     });
   }
 
-  const record =
-    parsed && typeof parsed === 'object'
-      ? (parsed as Record<string, unknown>)
-      : null;
+  const record = parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : null;
 
   const paymentStatus =
     (record?.status as PaymentStatus | undefined) ??
-    ((record?.payment as Record<string, unknown> | undefined)?.status as
-      | PaymentStatus
-      | undefined);
+    ((record?.payment as Record<string, unknown> | undefined)?.status as PaymentStatus | undefined);
 
-  const errorCode =
-    typeof record?.error === 'string' ? record.error : null;
+  const errorCode = typeof record?.error === 'string' ? record.error : null;
 
   onTrace?.({
     id: crypto.randomUUID(),
@@ -138,9 +129,7 @@ async function callBff<T>(
   return parsed as T;
 }
 
-export function fetchDemoConfig(
-  onTrace?: TraceListener,
-): Promise<DemoPublicConfig> {
+export function fetchDemoConfig(onTrace?: TraceListener): Promise<DemoPublicConfig> {
   return callBff<DemoPublicConfig>('GET', '/demo/config', undefined, onTrace);
 }
 
@@ -169,16 +158,8 @@ export function confirmDemoPayment(
   );
 }
 
-export function fetchDemoPayment(
-  paymentId: string,
-  onTrace?: TraceListener,
-): Promise<WirePayment> {
-  return callBff<WirePayment>(
-    'GET',
-    `/demo/payments/${paymentId}`,
-    undefined,
-    onTrace,
-  );
+export function fetchDemoPayment(paymentId: string, onTrace?: TraceListener): Promise<WirePayment> {
+  return callBff<WirePayment>('GET', `/demo/payments/${paymentId}`, undefined, onTrace);
 }
 
 export function fetchDemoPaymentStatus(

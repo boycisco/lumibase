@@ -7,8 +7,7 @@ import {
 } from '@/lib/lumibase/constants';
 
 const MAX_UINT256 = (BigInt(1) << BigInt(256)) - BigInt(1);
-const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const TX_HASH_REGEX = /^0x[0-9a-fA-F]{64}$/;
 const DECIMAL_INPUT_REGEX = /^\d+(?:\.\d+)?$/;
 
@@ -57,9 +56,7 @@ export function validateAndConvertUsdcAmount(rawAmount: unknown): {
 
   const [, fractionalPart = ''] = trimmed.split('.');
   if (fractionalPart.length > BASE_SEPOLIA_USDC_DECIMALS) {
-    throw new RequestValidationError(
-      'Amount has more than 6 decimal places.',
-    );
+    throw new RequestValidationError('Amount has more than 6 decimal places.');
   }
 
   let parsed: bigint;
@@ -86,9 +83,7 @@ export function validateAndConvertUsdcAmount(rawAmount: unknown): {
 export function validatePaymentId(id: string): string {
   const trimmed = id.trim();
   if (!UUID_REGEX.test(trimmed)) {
-    throw new RequestValidationError(
-      'Payment ID must be a valid UUID.',
-    );
+    throw new RequestValidationError('Payment ID must be a valid UUID.');
   }
   return trimmed;
 }
@@ -106,9 +101,7 @@ export function validateTransactionHash(rawHash: unknown): `0x${string}` {
   return trimmed as `0x${string}`;
 }
 
-export function validateCreatePaymentBody(
-  body: unknown,
-): ValidatedCreatePaymentPayload {
+export function validateCreatePaymentBody(body: unknown): ValidatedCreatePaymentPayload {
   if (!body || typeof body !== 'object' || Array.isArray(body)) {
     throw new RequestValidationError('Request body must be a JSON object.');
   }

@@ -1,11 +1,7 @@
 import { NextResponse } from 'next/server';
 import { DemoConfigurationError } from './config';
 import { UpstreamLumiBaseError } from './bootstrap';
-import {
-  checkRateLimit,
-  getClientIdentifier,
-  MAX_JSON_BODY_BYTES,
-} from './rate-limit';
+import { checkRateLimit, getClientIdentifier, MAX_JSON_BODY_BYTES } from './rate-limit';
 import { RequestValidationError } from './validation';
 
 export function jsonErrorEnvelope(

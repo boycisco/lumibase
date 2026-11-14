@@ -7,8 +7,7 @@ import type {
 
 export const BASE_SEPOLIA_CHAIN_ID = 84532 as const;
 export const BASE_SEPOLIA_CHAIN_NAME = 'Base Sepolia' as const;
-export const BASE_SEPOLIA_USDC_ADDRESS =
-  '0x036CbD53842c5426634e7929541eC2318f3dCF7e' as const;
+export const BASE_SEPOLIA_USDC_ADDRESS = '0x036CbD53842c5426634e7929541eC2318f3dCF7e' as const;
 export const BASE_SEPOLIA_USDC_DECIMALS = 6 as const;
 export const BASE_SEPOLIA_EXPLORER_URL = 'https://sepolia.basescan.org' as const;
 export const BASE_SEPOLIA_RPC_URL = 'https://sepolia.base.org' as const;
@@ -106,10 +105,7 @@ export const PAYMENT_LIFECYCLE_SPECS: readonly LifecycleStatusInfo[] = [
   },
 ];
 
-export type VerificationRetryAction =
-  | 'retry_same_hash'
-  | 'poll_status'
-  | 'do_not_retry';
+export type VerificationRetryAction = 'retry_same_hash' | 'poll_status' | 'do_not_retry';
 
 export interface VerificationOutcomeSpec {
   code: VerificationErrorCode;
@@ -119,10 +115,7 @@ export interface VerificationOutcomeSpec {
   guidance: string;
 }
 
-export const VERIFICATION_OUTCOME_SPECS: Record<
-  VerificationErrorCode,
-  VerificationOutcomeSpec
-> = {
+export const VERIFICATION_OUTCOME_SPECS: Record<VerificationErrorCode, VerificationOutcomeSpec> = {
   TRANSACTION_NOT_FOUND: {
     code: 'TRANSACTION_NOT_FOUND',
     meaning: 'Hash not yet known on Base Sepolia',
@@ -160,8 +153,7 @@ export const VERIFICATION_OUTCOME_SPECS: Record<
     meaning: 'Transfer came from a different sender than the specified payer',
     safeToRetrySameHash: false,
     action: 'do_not_retry',
-    guidance:
-      'Switch to the expected payer wallet and submit a new transfer.',
+    guidance: 'Switch to the expected payer wallet and submit a new transfer.',
   },
   TRANSACTION_NOT_ENOUGH_CONFIRMATIONS: {
     code: 'TRANSACTION_NOT_ENOUGH_CONFIRMATIONS',

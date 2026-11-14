@@ -22,13 +22,12 @@ const globalForBootstrap = globalThis as unknown as {
   __lumibase_bootstrap__?: BootstrapState;
 };
 
-const state: BootstrapState =
-  globalForBootstrap.__lumibase_bootstrap__ ?? {
-    applicationKey: null,
-    applicationId: null,
-    bootstrappedForApiUrl: null,
-    inflight: null,
-  };
+const state: BootstrapState = globalForBootstrap.__lumibase_bootstrap__ ?? {
+  applicationKey: null,
+  applicationId: null,
+  bootstrappedForApiUrl: null,
+  inflight: null,
+};
 
 globalForBootstrap.__lumibase_bootstrap__ = state;
 
@@ -50,10 +49,7 @@ export async function ensureApplicationApiKey(
 ): Promise<{ apiKey: string; config: DemoServerConfig }> {
   const config = assertValidServerConfig(env);
 
-  if (
-    state.applicationKey &&
-    state.bootstrappedForApiUrl === config.lumibaseApiUrl
-  ) {
+  if (state.applicationKey && state.bootstrappedForApiUrl === config.lumibaseApiUrl) {
     return { apiKey: state.applicationKey, config };
   }
 
@@ -81,8 +77,7 @@ export async function ensureApplicationApiKey(
       throw new UpstreamLumiBaseError(503, {
         error: {
           code: 'LUMIBASE_UNREACHABLE',
-          message:
-            'Unable to reach the configured LumiBase API during application bootstrap.',
+          message: 'Unable to reach the configured LumiBase API during application bootstrap.',
           requestId: crypto.randomUUID(),
         },
       });
@@ -101,10 +96,7 @@ export async function ensureApplicationApiKey(
           ? parsedBody
           : {
               error: {
-                code:
-                  response.status === 401
-                    ? 'UNAUTHORIZED'
-                    : 'APPLICATION_BOOTSTRAP_FAILED',
+                code: response.status === 401 ? 'UNAUTHORIZED' : 'APPLICATION_BOOTSTRAP_FAILED',
                 message: `LumiBase application bootstrap failed with HTTP ${response.status}.`,
                 requestId: crypto.randomUUID(),
               },
@@ -113,9 +105,7 @@ export async function ensureApplicationApiKey(
     }
 
     const record =
-      parsedBody && typeof parsedBody === 'object'
-        ? (parsedBody as Record<string, unknown>)
-        : null;
+      parsedBody && typeof parsedBody === 'object' ? (parsedBody as Record<string, unknown>) : null;
     const key = typeof record?.key === 'string' ? record.key : '';
     const appObj =
       record?.application && typeof record.application === 'object'
