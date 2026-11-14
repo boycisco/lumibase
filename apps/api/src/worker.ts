@@ -362,3 +362,145 @@ export async function runWorker(config: WorkerConfig, opts: RunLoopOptions = {})
     });
   }
 }
+
+// ---------------------------------------------------------------------------
+// Daemon: the process-level wrapper around runWorker.
+//
+// `startDaemon` is the testable primitive � takes deps + AbortSignal, returns
+// { stop, done }. Tests call it directly.
+//
+// `main` is the process entry point. It loads real config from env, opens the
+// DB pool, wires SIGINT/SIGTERM to graceful shutdown, and blocks on `done`.
+//
+// The `import.meta.url === pathToFileURL(process.argv[1]).href` guard ensures
+// main() runs only when worker.ts (or dist/worker.js) is the actual entry
+// module, never when tests import { runWorkerOnce } from this file.
+// ---------------------------------------------------------------------------
+
+import { pathToFileURL } from 'node:url';
+import pino from 'pino';
+import { createClient } from '@lumibase/database';
+import { loadApiConfig } from './config.ts';
+import type { ApiConfig } from './config.ts';
+
+export interface DaemonDeps {
+  readonly config: ApiConfig;
+  readonly db: Database;
+  readonly masterSecret: string;
+  readonly logger: pino.Logger;
+}
+
+export interface StartDaemonOptions extends RunOnceOptions {
+  readonly intervalMs?: number;
+  readonly onTick?: (result: TickResult) => void;
+  readonly onError?: (err: unknown) => void;
+}
+
+export interface RunningDaemon {
+  readonly stop: () => void;
+  readonly done: Promise<void>;
+}
+
+export function startDaemon(deps: DaemonDeps, opts: StartDaemonOptions = {}): RunningDaemon {
+  const controller = new AbortController();
+  const intervalMs = opts.intervalMs ?? deps.config.workerIntervalMs;
+
+  const done = runWorker(
+    {
+      db: deps.db,
+      masterSecret: deps.masterSecret,
+      clock: () => new Date(),
+    },
+    {
+      intervalMs,
+      batchSize: opts.batchSize,
+      httpTimeoutMs: opts.httpTimeoutMs,
+      signal: controller.signal,
+      onTick:
+        opts.onTick ??
+        ((result) => {
+          if (result.claimed > 0) {
+            deps.logger.info(
+              {
+                claimed: result.claimed,
+                delivered: result.delivered,
+                retried: result.retried,
+                failed: result.failed,
+              },
+              'worker_tick',
+            );
+          }
+        }),
+      onError:
+        opts.onError ??
+        ((err) => {
+          deps.logger.error({ err }, 'worker_error');
+        }),
+    },
+  );
+
+  return {
+    stop: () => controller.abort(),
+    done,
+  };
+}
+
+async function main(): Promise<void> {
+  const config = loadApiConfig();
+
+  if (!config.webhookSecret) {
+    console.error('WEBHOOK_SECRET is not set; worker cannot sign webhook deliveries.');
+    process.exit(1);
+  }
+
+  const logger = pino(
+    config.nodeEnv === 'development'
+      ? {
+          level: config.logLevel,
+          transport: {
+            target: 'pino-pretty',
+            options: { colorize: true, translateTime: 'SYS:standard' },
+          },
+        }
+      : { level: config.logLevel },
+  );
+
+  const client = createClient(config.databaseUrl);
+  const daemon = startDaemon({
+    config,
+    db: client.db,
+    masterSecret: config.webhookSecret,
+    logger,
+  });
+
+  logger.info({ intervalMs: config.workerIntervalMs }, 'worker_starting');
+
+  // Signal handlers only signal the daemon. `main()` owns the exit path so
+  // we call client.close() exactly once, regardless of whether the loop
+  // stopped via signal, error, or natural completion.
+  const shutdown = (signal: string): void => {
+    logger.info({ signal }, "worker_stopping");
+    daemon.stop();
+  };
+
+  process.on("SIGINT", () => shutdown("SIGINT"));
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+
+  try {
+    await daemon.done;
+    await client.close();
+    process.exit(0);
+  } catch (err) {
+    logger.error({ err }, "worker_crashed");
+    await client.close().catch(() => {});
+    process.exit(1);
+  }
+}
+
+const entry = process.argv[1];
+if (entry && import.meta.url === pathToFileURL(entry).href) {
+  main().catch((err) => {
+    console.error('Fatal worker startup error:', err);
+    process.exit(1);
+  });
+}
