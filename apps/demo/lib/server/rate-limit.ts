@@ -7,7 +7,20 @@ interface Bucket {
   resetAt: number;
 }
 
-const buckets = new Map<string, Bucket>();
+// Next.js bundles each route handler as a separate webpack module, so a plain
+// module-level Map would be **duplicated** per route handler. Each route would
+// have its own rate-limit buckets, and a client could bypass the documented
+// per-client limit by spreading requests across routes. `globalThis` gives
+// every module instance a single shared Map per Node process.
+// Reference: https://www.prisma.io/docs/orm/more/help-and-troubleshooting/help-articles/nextjs-prisma-client-dev-practices
+const globalForRateLimit = globalThis as unknown as {
+  __lumibase_ratelimit__?: Map<string, Bucket>;
+};
+
+const buckets: Map<string, Bucket> =
+  globalForRateLimit.__lumibase_ratelimit__ ?? new Map<string, Bucket>();
+
+globalForRateLimit.__lumibase_ratelimit__ = buckets;
 
 export interface RateLimitResult {
   allowed: boolean;

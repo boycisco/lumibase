@@ -11,12 +11,26 @@ interface BootstrapState {
   inflight: Promise<string> | null;
 }
 
-const state: BootstrapState = {
-  applicationKey: null,
-  applicationId: null,
-  bootstrappedForApiUrl: null,
-  inflight: null,
+// Next.js bundles each route handler as a separate webpack module, so a plain
+// module-level `const state = {...}` would be **duplicated** per route handler.
+// Each copy would bootstrap a new LumiBase application on its first request,
+// and payments created under application A would 404 when confirmed under
+// application B. `globalThis` gives every module instance a single shared state
+// object per Node process, so bootstrap runs exactly once.
+// Reference: https://www.prisma.io/docs/orm/more/help-and-troubleshooting/help-articles/nextjs-prisma-client-dev-practices
+const globalForBootstrap = globalThis as unknown as {
+  __lumibase_bootstrap__?: BootstrapState;
 };
+
+const state: BootstrapState =
+  globalForBootstrap.__lumibase_bootstrap__ ?? {
+    applicationKey: null,
+    applicationId: null,
+    bootstrappedForApiUrl: null,
+    inflight: null,
+  };
+
+globalForBootstrap.__lumibase_bootstrap__ = state;
 
 export class UpstreamLumiBaseError extends Error {
   readonly status: number;
