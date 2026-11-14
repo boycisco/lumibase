@@ -32,6 +32,10 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://lumibase:lumibase_dev_password@localhost:5432/lumibase_dev
+      API_SECRET: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      WEBHOOK_SECRET: fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210
+      BASE_SEPOLIA_RPC: https://sepolia.base.org
+      NODE_ENV: test
 
     steps:
       - name: Checkout
