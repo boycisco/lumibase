@@ -33,3 +33,5 @@ Thumbs.db
 # Database
 *.sqlite
 *.sqlite3
+# TypeScript incremental build cache
+*.tsbuildinfo
