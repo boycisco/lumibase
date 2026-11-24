@@ -1,177 +1,214 @@
 # LumiBase
 
-Open-source developer toolkit for building applications on Base.
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
 
-> **Status: Pre-release (v0.1.0).**
-> The capability packages, Fastify HTTP API, webhook worker, and Next.js
-> demo are implemented. The demo targets Base Sepolia. Phase 11
-> (documentation) is in progress; Phase 12 (release preparation) is next.
-> Verify the current test and deployment status before treating this as a
-> release-readiness statement.
+**An open-source, language-agnostic developer toolkit for building on Base.**
 
-## What LumiBase is
+LumiBase aims to make the essential infrastructure behind onchain applications easier to build, integrate, and verify.
 
-LumiBase is a modular, language-agnostic toolkit for developers building
-on Base. It is designed to support multiple independent language
-implementations (TypeScript first, Python and Rust later) that share the
-same protocols and specifications.
+We're starting with payments.
 
-The first flagship capability is **Payments**: a secure, independently
-verified flow for accepting and confirming onchain USDC payments on
-Base Sepolia.
+The first release provides the tools to create payment requests, accept USDC, and independently verify transactions on-chain, without trusting the client or taking custody of user funds.
 
-## Principles
+**Payments are just the beginning.**
 
-- **Language independence** — protocols live in `specs/`, not in any SDK.
-- **Security first** — payments are confirmed using independently verified
-  blockchain evidence, never a client claim.
-- **Modular monorepo** — each capability is maintained as an independent
-  package.
-- **Open source** — the core does not depend on a proprietary LumiBase
-  service.
+## Demo
 
-## Repository status
+[![LumiBase Demo Video](./docs/assets/thumbnail.png)](https://x.com/l0rdWells/status/2125300922532471180)
 
-| Phase                               | Status      |
-| ----------------------------------- | ----------- |
-| 1. Repository foundation            | Complete    |
-| 2. Core package                     | Complete    |
-| 3. Payment specifications           | Complete    |
-| 4. Database foundation              | Complete    |
-| 5. Blockchain foundation            | Complete    |
-| 6. Payment service                  | Complete    |
-| 7. Payment verification             | Complete    |
-| 8. API implementation               | Complete    |
-| 9. Event and webhook infrastructure | Complete    |
-| 10. Payment demonstration           | Complete    |
-| 11. Documentation                   | In progress |
-| 12. Release preparation             | Not started |
+*Watch the 60-second demo to see LumiBase create a payment, process a wallet transaction, and independently verify the result on Base Sepolia.*
 
-## Packages
+## Project Status
 
-- `@lumibase/core` — shared primitives:
-  - **Errors** — structured `LumiError` with safe wire serialization.
-  - **Amounts** — exact `bigint` base-unit arithmetic; no floating point.
-  - **Addresses** — EIP-55 checksum validation.
-  - **Chains** — the `ChainConfig` shape and mainnet safety gate.
-  - **Config** — Zod-validated environment loading with secret-safe errors.
+**v0.1.0(Developer Preview)**
 
-- `@lumibase/database` — PostgreSQL schema and client:
-  - **Drizzle ORM** schema for `applications`, `payments`, `transactions`,
-    `events`, `webhooks`, and `deliveries`.
-  - Money-critical constraints enforced at the database level, including
-    `UNIQUE(chain_id, hash)` and `UNIQUE(webhook_id, event_id)`.
+The first release introduces USDC payments on Base Sepolia, with independent on-chain verification, a developer API, webhooks, and a Next.js reference demo.
 
-- `@lumibase/network` — chain access layer:
-  - Viem-based public client factory with mainnet safety gating.
-  - RPC reads, ERC-20 `Transfer` log parsing, confirmation counting, and
-    the `waitForBlock` helper used by verification.
+Base Mainnet is not yet supported.
 
-- `@lumibase/payments` — payment lifecycle:
-  - **Create / read / expire / cancel** — lifecycle operations defined by
-    `specs/`.
-  - **Verify / confirm** — independently re-derives relevant facts from
-    chain evidence, including receipt, logs, amount, recipient, token, and
-    confirmation count.
+This is an early foundation, not the final scope of LumiBase.
 
-- `@lumibase/api` — HTTP API and worker:
-  - **Fastify 5** application with rate limiting, Helmet, and OpenAPI docs.
-  - Admin and application-key authentication.
-  - Webhook registration and delivery.
-  - Worker entry point with graceful shutdown and
-    `FOR UPDATE SKIP LOCKED` job claiming.
+## The Goal
 
-- `@lumibase/conformance` — language-independent conformance:
-  - JSON Schema validators and fixture tests that implementations in
-    other languages can run against `specs/` and `tests/fixtures/`.
+Building on Base should not mean reinventing the same infrastructure for every application.
 
-- `@lumibase/demo` — reference demo application:
-  - Next.js application demonstrating the Base Sepolia payment flow.
-  - See [apps/demo/README.md](./apps/demo/README.md) for setup and operation.
+Developers need reliable ways to handle common on-chain operations without having to independently solve every problem involving blockchain data, transaction verification, API security, and cross-language compatibility.
 
-## Development
+LumiBase is being built to provide that foundation.
 
-Requirements: Node.js >= 20, pnpm 9, and Docker.
+The long-term goal is a modular, language-agnostic toolkit that developers can use to integrate essential Base infrastructure into their applications, regardless of their preferred programming language.
+
+We're beginning with payments because handling money requires more than a client-side success message.
+
+## Why LumiBase?
+
+A typical payment integration can introduce several problems:
+
+- **Client-side trust:** A frontend can claim that a payment succeeded without proving that the transaction actually did.
+- **Blockchain complexity:** Developers must retrieve transactions, parse receipts and token events, handle confirmations, and account for failed or incomplete payments.
+- **Repeated implementation:** Different applications end up rebuilding similar payment infrastructure.
+- **Language lock-in:** A useful toolkit shouldn't require every developer to use the same programming language.
+
+LumiBase addresses these problems by separating payment initiation from payment verification and making the underlying protocol independent of its TypeScript implementation.
+
+## How It Works
+
+LumiBase separates the user's wallet, the application backend, and the payment verification process.
+
+1. **Create a payment request.** Your application requests a payment through the LumiBase API.
+2. **Pay from a wallet.** The user sends USDC directly from their wallet to the specified recipient.
+3. **Submit the transaction hash.** Your application provides the transaction hash as a reference, not as proof of payment.
+4. **Verify independently.** LumiBase retrieves the transaction and receipt from its own RPC connection, validates the ERC-20 transfer, checks the payment details, and evaluates confirmation depth.
+5. **Update payment status.** The API determines the authoritative payment outcome and can notify your application through webhooks.
+
+The browser does not decide whether a payment succeeded. The server verifies the on-chain evidence independently.
+
+## Core Principles
+
+- **Independent verification:** Payment success is determined by blockchain evidence, not client-side claims.
+- **Non-custodial:** Users send funds directly from their wallets. LumiBase does not hold user funds or private keys.
+- **Language-agnostic:** Protocol definitions live in JSON specifications, allowing implementations in other languages to follow the same rules.
+- **Modular:** Functionality is separated into packages that can evolve independently.
+- **Developer-first:** Clear APIs, reusable components, documentation, and conformance fixtures make integration easier.
+- **Secure by design:** Sensitive credentials remain server-side, and payment-critical operations are validated independently.
+
+## Quick Start
+
+### Requirements
+
+- Node.js >= 20
+- pnpm 9
+- Docker
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/boycisco/lumibase.git
+cd lumibase
+
+# Start required services
+docker compose up -d --wait
+
+# Install dependencies
 pnpm install
+
+# Build packages
 pnpm build
+
+# Run the test suite
 pnpm test
-pnpm lint
-pnpm typecheck
-pnpm format:check
 ```
 
-### Local database
+The test suite currently contains **556 tests**.
 
-LumiBase uses PostgreSQL. Start a local instance with:
+### Running the Reference Demo
 
-```bash
-docker compose up -d
-```
+The reference demo is a Next.js application located in `apps/demo/`. It demonstrates the payment lifecycle using Base Sepolia.
 
-This runs PostgreSQL on `localhost:5433` using the development credentials
-configured through the root `.env` file (created from `.env.example`).
-Apply the schema with:
+1. **Configure the demo environment.**
 
-```bash
-pnpm --filter @lumibase/database drizzle:migrate
-```
+   Create `apps/demo/.env.local` and add the required variables. See [apps/demo/README.md](./apps/demo/README.md).
 
-Stop the database with:
+2. **Configure the Base Sepolia RPC.**
 
-```bash
-docker compose down
-```
+   Set `BASE_SEPOLIA_RPC` in the root `.env` file.
 
-Add `-v` to also delete the data volume and start with a clean database.
-
-Tests that touch the database (`@lumibase/database`) require the container
-to be running. If it is not running, the test suite should fail with a
-message explaining how to start it.
-
-### Running the demo
-
-The demo is a Next.js application in `apps/demo/` that exercises the
-payment flow against Base Sepolia. It requires the LumiBase API and the
-demo application to run separately.
-
-1. **Configure the demo environment.** Create `apps/demo/.env.local` and
-   add the variables required by the demo. Next.js loads this file from
-   the application directory:
-
-   ```dotenv
-   LUMIBASE_API_URL=http://localhost:3000
-   API_SECRET=<same value as the API's configured API_SECRET>
-   DEMO_RECIPIENT=<Base Sepolia recipient address>
-   DEMO_PORT=4000
-   ```
-
-2. **Configure the API RPC endpoint.** Set `BASE_SEPOLIA_RPC` in the root
-   `.env` to a Base Sepolia RPC URL, such as `https://sepolia.base.org`.
-   The API uses this endpoint to verify payments against the real
-   Base Sepolia network.
-
-3. **Start the API** in one terminal:
+3. **Start the LumiBase API.**
 
    ```bash
    pnpm --filter @lumibase/api dev
    ```
 
-4. **Start the demo** in another terminal:
+4. **Start the reference demo in another terminal.**
 
    ```bash
    pnpm demo
    ```
 
-5. Open `http://localhost:4000` in a browser with an EVM wallet
-   (such as MetaMask, Rabby, or OKX) connected to Base Sepolia.
+5. Open `http://localhost:4000` and connect a wallet configured for Base Sepolia.
 
-See [apps/demo/README.md](./apps/demo/README.md) for the demo setup and
-[docs/demo/frontend-contract.md](./docs/demo/frontend-contract.md) for the
-frontend integration contract. The documentation index is at
-[docs/index.md](./docs/index.md).
+For additional setup details, see the [demo documentation](./apps/demo/README.md).
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Browser[Browser] --> BFF[Next.js BFF]
+    BFF --> API[LumiBase API]
+    
+    Browser --> Wallet[User Wallet]
+    Wallet -->|Signs & submits USDC| Chain[Base Sepolia]
+    
+    API -->|Fetches & verifies| RPC[Base RPC]
+    RPC --> Chain
+```
+
+The frontend communicates with the Next.js Backend-for-Frontend (BFF), which securely forwards requests to the LumiBase API.
+
+The BFF keeps application credentials server-side. The LumiBase API independently verifies transactions using its own blockchain connection.
+
+The wallet remains under the user's control throughout the payment process.
+
+## Packages
+
+| Package | Description |
+|---|---|
+| `@lumibase/core` | Shared primitives, error handling, exact base-unit arithmetic, address validation, and chain safety gates. |
+| `@lumibase/database` | PostgreSQL schema, database client, and persistence layer. |
+| `@lumibase/network` | Viem-based blockchain access, ERC-20 transfer log parsing, and confirmation counting. |
+| `@lumibase/payments` | Payment creation, retrieval, verification, and lifecycle management. |
+| `@lumibase/api` | Fastify HTTP API, authentication, webhook registration, and delivery worker. |
+| `@lumibase/conformance` | JSON Schema validators and fixtures for cross-language compatibility. |
+| `apps/demo` | Next.js reference application demonstrating the payment integration. |
+
+## Language Independence
+
+TypeScript is the first implementation, not a requirement for using the protocol.
+
+LumiBase specifications define the expected data structures, validation rules, and behavior independently of any programming language.
+
+This makes it possible to build compatible implementations in languages such as Python and Rust without having to reproduce the original TypeScript internals.
+
+The specifications and conformance fixtures are the foundation for that compatibility.
+
+See the [Language Independence Guide](./specs/README.md).
+
+## What's Next?
+
+Payments are the first building block.
+
+The broader direction for LumiBase is to expand into additional infrastructure that makes building on Base easier and more accessible to developers.
+
+Future capabilities can build on the same principles:
+
+- Modular integrations.
+- Language-independent specifications.
+- Independent verification.
+- Reusable developer infrastructure.
+
+The goal isn't to build another closed payment product. It's to create infrastructure developers can use, extend, and build upon.
+
+## Documentation
+
+- [Documentation Index](./docs/index.md)
+- [Language Independence Guide](./specs/README.md)
+- [Demo Setup](./apps/demo/README.md)
+
+## Contributing
+
+LumiBase is open source, and contributions are welcome.
+
+If you're interested in improving the existing implementation, developing another language implementation, or extending the toolkit, start by exploring the specifications and package documentation.
+
+Please open an issue to discuss significant changes before submitting a pull request.
+
+## Security
+
+Security issues should be reported privately rather than through public GitHub issues.
+
+Please refer to [SECURITY.md](./SECURITY.md) for the vulnerability reporting process.
 
 ## License
 
-Apache-2.0. See [LICENSE](./LICENSE).
+LumiBase is licensed under the [Apache License 2.0](./LICENSE).

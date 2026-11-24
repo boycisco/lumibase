@@ -26,9 +26,6 @@ TypeScript source.
 
 ## Demo
 
-- [Frontend integration contract](demo/frontend-contract.md) — the
-  integration contract between the browser, the demo BFF, and the
-  LumiBase API.
 - [Demo application README](../apps/demo/README.md) — setup, environment
   variables, commands, and verification steps.
 

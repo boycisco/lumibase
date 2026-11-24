@@ -1,8 +1,7 @@
 # LumiBase v0.1 Demo Frontend and Backend-for-Frontend (BFF)
 
 This application implements the **LumiBase v0.1 Base Sepolia USDC demo**
-and its same-origin **Backend-for-Frontend (BFF)** according to the
-[LumiBase Frontend Integration Contract](../../docs/demo/frontend-contract.md).
+and its same-origin **Backend-for-Frontend (BFF)** using the LumiBase API.
 
 ## Architecture
 
